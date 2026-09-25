@@ -1,6 +1,6 @@
 "use strict";
 
-const CAMPAIGN_CODE = "CLEARLOVE100";
+const CAMPAIGN_CODE = "LVR7Q2";
 const STORAGE_KEY = "clearShareLab_v1";
 const TEACHER_IMAGE = Object.freeze({ src: "./assets/ria-teacher.webp", width: 720, height: 629 });
 const LOVE_REPORT_LOGO = Object.freeze({ src: "./assets/love-report-logo.webp", width: 1000, height: 333 });
@@ -183,6 +183,7 @@ let selectedUpload = null;
 let selectedUploadUrl = null;
 let uploadError = "";
 let advancing = false;
+let copyCodeResetTimer = null;
 
 function loadState() {
   try {
@@ -414,14 +415,19 @@ function codeMarkup() {
   if (!state.campaignUnlocked) return "";
   return `<section class="code-card" id="campaign-code-section" tabindex="-1">
     <p class="thanks">アップロード完了！</p>
-    <h2 class="code-reward">100ptゲット！</h2>
+    <h2 class="code-reward"><span>コードを入力して</span><span>100ptゲットしよう！</span></h2>
     <p class="code-label">キャンペーンコード</p>
     <div class="code-box">
       <code class="campaign-code">${CAMPAIGN_CODE}</code>
       <button class="copy-btn" id="copy-code">コピー</button>
     </div>
-    <a class="cta cta-blue app-code-cta" href="https://app-clear.com/open?act=campaign_code">Clearアプリでコードを入力する</a>
-    <p class="code-help">コピーしたコードをClearアプリで入力してください。</p>
+    <ol class="code-steps" aria-label="ポイントを受け取る手順">
+      <li><span>1</span>コードをコピー</li>
+      <li><span>2</span>100ptゲットする</li>
+    </ol>
+    <a class="cta cta-blue app-code-cta" href="https://app-clear.com/open?act=campaign_code">100ptゲットする</a>
+    <p class="code-help">コピーしたコードを入力してください。</p>
+    <p class="code-note">※ポイントの受け取りは1アカウントにつき1回までです</p>
     <button class="restart-link" id="restart-button">もう一度診断する</button>
   </section>`;
 }
@@ -497,7 +503,7 @@ function bindEvents() {
   document.querySelector("#screenshot-input")?.addEventListener("change", handleFileSelection);
   document.querySelector("#change-image")?.addEventListener("click", () => document.querySelector("#screenshot-input")?.click());
   document.querySelector("#upload-button")?.addEventListener("click", uploadScreenshot);
-  document.querySelector("#copy-code")?.addEventListener("click", () => copyText(CAMPAIGN_CODE, "キャンペーンコードをコピーしました"));
+  document.querySelector("#copy-code")?.addEventListener("click", copyCampaignCode);
   document.querySelector("#restart-button")?.addEventListener("click", resetDiagnosis);
 }
 
@@ -760,30 +766,26 @@ async function drawShareImage() {
   }
 
   roundRect(ctx, 470, 360, 520, 148, 24, "rgba(255,249,252,.94)", "#efb5d5");
-  ctx.textAlign = "left";
-  ctx.fillStyle = "#7a6680";
-  ctx.font = '800 19px "Yu Gothic", sans-serif';
-  ctx.fillText("タイプ", 500, 391);
   ctx.textAlign = "center";
   ctx.fillStyle = result.accentDeep;
   fitText(ctx, result.typeName, 450, 48, 950);
-  ctx.fillText(result.typeName, 730, 442);
+  ctx.fillText(result.typeName, 730, 430);
   ctx.fillStyle = "#0a438f";
   ctx.font = '850 23px "Yu Gothic", sans-serif';
-  wrapCanvasText(ctx, result.catchCopy, 730, 478, 445, 31, 2);
+  wrapCanvasText(ctx, result.catchCopy, 730, 470, 445, 26, 2);
 
   roundRect(ctx, 470, 516, 520, 148, 22, "rgba(255,251,253,.96)", "#9abfe6");
   try {
     const teacher = await loadImage(TEACHER_IMAGE.src);
-    drawImageContain(ctx, teacher, 864, 522, 108, 124);
+    drawImageContain(ctx, teacher, 848, 522, 136, 136);
   } catch (_) {}
   ctx.textAlign = "left";
   ctx.fillStyle = "#e33383";
   ctx.font = '900 23px "Yu Gothic", sans-serif';
-  ctx.fillText("先生からのひとこと", 510, 551);
+  ctx.fillText("先生からのひとこと", 510, 559);
   ctx.fillStyle = "#113e7c";
   ctx.font = '750 18px "Yu Gothic", sans-serif';
-  wrapCanvasText(ctx, result.teacherComment, 510, 583, 342, 25, Number.POSITIVE_INFINITY);
+  wrapCanvasText(ctx, result.teacherComment, 510, 596, 326, 25, Number.POSITIVE_INFINITY);
 
   ctx.fillStyle = "#0b4fa8";
   ctx.font = '900 24px "Yu Gothic", sans-serif';
@@ -833,7 +835,7 @@ async function drawShareImage() {
   ctx.fillText("あなたは何タイプ？", 540, 1023);
   try {
     const brandLogo = await loadImage(CLEAR_SHARE_LAB_LOGO.src);
-    drawImageContain(ctx, brandLogo, 819, 976, 205, 70);
+    drawImageContain(ctx, brandLogo, 790, 962, 240, 84);
   } catch (_) {}
   canvas.setAttribute("aria-busy", "false");
   if (loading) loading.hidden = true;
@@ -894,14 +896,44 @@ function copyShareText() {
   return copyText(shareText(), "シェア文をコピーしました");
 }
 
+async function copyCampaignCode() {
+  const copied = await copyText(CAMPAIGN_CODE, "キャンペーンコードをコピーしました");
+  if (!copied) return;
+  const button = document.querySelector("#copy-code");
+  if (!button) return;
+  clearTimeout(copyCodeResetTimer);
+  button.textContent = "コピー済み ✓";
+  button.classList.add("is-copied");
+  copyCodeResetTimer = setTimeout(() => {
+    if (!button.isConnected) return;
+    button.textContent = "コピー";
+    button.classList.remove("is-copied");
+  }, 1600);
+}
+
 async function copyText(text, message) {
   try {
     await navigator.clipboard.writeText(text);
   } catch (_) {
     const area = document.createElement("textarea");
-    area.value = text; document.body.appendChild(area); area.select(); document.execCommand("copy"); area.remove();
+    area.value = text;
+    document.body.appendChild(area);
+    area.select();
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (_) {
+      copied = false;
+    } finally {
+      area.remove();
+    }
+    if (!copied) {
+      showToast("コピーできませんでした");
+      return false;
+    }
   }
   showToast(message);
+  return true;
 }
 
 function showToast(message) {
