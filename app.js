@@ -14,7 +14,7 @@ const POINT_COIN_IMAGE = Object.freeze({ src: "./assets/point-coin.webp", width:
 const SHARE_CONFIG = Object.freeze({
   displayHashtag: "#CLEARシェアラボ",
   socialHashtag: "#CLEARシェアラボ",
-  shareUrl: "https://clear-love-report-2026.nakamura-s391270.chatgpt.site/",
+  shareUrl: "https://clear-official.github.io/clear-share-lab/#home",
   xText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n\n${SHARE_CONFIG.socialHashtag}`,
   lineText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n${SHARE_CONFIG.socialHashtag}`,
   generalText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n\n${SHARE_CONFIG.socialHashtag}`,
@@ -1017,6 +1017,7 @@ function registerWebMCP() {
   tools.forEach((tool) => { try { void Promise.resolve(context.registerTool(tool)).catch(() => {}); } catch (_) {} });
 }
 
+if (location.hash === "#home") state.screen = "home";
 if (!location.hash || ["#share", "#upload", "#code"].includes(location.hash)) history.replaceState({ screen: state.screen }, "", `#${state.screen}`);
 if (["quiz", "name", "result"].includes(state.screen)) preloadCharacters();
 render();

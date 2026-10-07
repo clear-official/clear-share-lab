@@ -516,7 +516,7 @@ General share structure:
 `私は「○○タイプ」でした！`
 `#CLEARシェアラボ`
 
-The site share URL is appended where appropriate.
+The site share URL is `https://clear-official.github.io/clear-share-lab/#home` and is appended where appropriate. Opening this link starts at TOP even when that browser has a saved result.
 
 ---
 
