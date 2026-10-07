@@ -10,7 +10,7 @@ The first content is **恋愛通知表**.
 Before making any change, read this file and `PROJECT_SPEC.md`.
 Treat the existing implementation and the specifications in these files as the source of truth.
 
-Last updated: 2026-09-24
+Last updated: 2026-10-07
 
 ---
 
@@ -32,9 +32,13 @@ When a task is completed:
 2. Verify the affected flow.
 3. Fix any regression caused by the change.
 4. Re-test the same flow.
-5. Report what changed, what was tested, and any remaining risk.
+5. Commit the verified change when the task authorizes repository updates.
+6. Push the commit and verify the GitHub Pages deployment.
+7. Report what changed, what was tested, and any remaining risk.
 
 Do not stop at “implemented” without verification.
+
+For small and medium changes, complete the verification, commit, push, and GitHub Pages check in the same task when authorized. For major design changes, high-impact flow changes, or work that cannot be checked adequately from the Codex environment, report the limitation and request human verification before commit and push.
 
 ---
 
@@ -257,7 +261,7 @@ Do not restore the old “投稿できましたか？” confirmation step.
 
 Desired flow:
 
-result → share → screenshot upload → campaign code
+result → share → screenshot → support contact → manual campaign code delivery → enter code in Clear
 
 ---
 
@@ -269,23 +273,36 @@ User-facing sequence:
 
 1. Post result to SNS with `#CLEARシェアラボ`
 2. Take a screenshot of the posted screen
-3. Upload the screenshot
-4. Receive a campaign code
-5. Open Clear and enter the code
+3. Open the support contact page from the result screen
+4. Send the screenshot through the support contact page
+5. Receive a campaign code manually after review
+6. Open Clear and enter the code
 
-Clear campaign-code screen:
+Current support contact destination:
 
-`https://app-clear.com/open?act=campaign_code`
+`https://app-clear.com/open?act=page_contact`
 
-The main CTA after code display should be:
+Current main CTA:
 
-**Clearアプリでコードを入力する**
+**問い合わせ窓口へスクショを送る**
 
 ---
 
 ## 13. Upload / storage implementation rules
 
-The current front-end uses a mock upload implementation. That is temporary.
+The current production-facing submission mode is `support`.
+
+Keep `CAMPAIGN_SUBMISSION_MODE` set to `"support"` until the development team provides an approved storage and issuance plan. In support mode:
+
+- do not show or run the image selection/upload UI
+- do not store images on this site
+- do not display or automatically issue a campaign code
+- do not show a campaign-code input CTA or other code-entry guidance
+- send users to `https://app-clear.com/open?act=page_contact`
+
+The existing image selection, preview, mock upload, completion, campaign-code, copy, and point CTA code is retained for a possible future `upload` mode. Do not remove it, expose it in support mode, or add Google Drive, GAS, external storage, or automatic code issuance until the development team provides an approved plan.
+
+The retained front-end upload implementation uses a mock upload. It is not production-ready.
 
 Before production, replace it with real server-side storage and claim recording.
 
@@ -320,7 +337,7 @@ Prefer EXIF removal/re-encoding where practical.
 ### Critical
 
 Do **not** keep the production campaign code in client-side JavaScript.
-The current recovered front-end contains a campaign code directly in `app.js`; this must be removed before production.
+The retained upload-mode UI must receive any future campaign code from an approved server flow. `CAMPAIGN_CODE` currently has no value in `app.js`.
 
 The production flow should be:
 
@@ -406,7 +423,14 @@ After any meaningful change, verify at minimum:
 - rating stars render correctly
 - share buttons work or fall back correctly
 
-### Upload/reward
+### Current support/reward
+- support submission heading and CTA are visible
+- support CTA points to `https://app-clear.com/open?act=page_contact`
+- later manual code delivery and the one-account limit are explained
+- image selection/upload controls and completion UI are not visible
+- campaign code value, code copy, point CTA, and code-entry guidance are not visible
+
+### Future upload mode
 - upload button disabled with no file
 - invalid file handling works
 - failure does not reveal a campaign code
@@ -433,9 +457,8 @@ Do not silently:
 - alter diagnosis scoring
 - replace approved copy
 - change reward amount
-- remove the screenshot upload requirement
+- remove the screenshot submission requirement
 - expose a campaign code client-side
 - turn uploaded images public
 - add tracking/analytics scripts
 - change external links
-

@@ -1,6 +1,8 @@
 "use strict";
 
-const CAMPAIGN_CODE = "LVR7Q2";
+const CAMPAIGN_CODE = null;
+const CAMPAIGN_SUBMISSION_MODE = "support"; // "support" | "upload"
+const SUPPORT_URL = "https://app-clear.com/open?act=page_contact";
 const STORAGE_KEY = "clearShareLab_v1";
 const TEACHER_IMAGE = Object.freeze({ src: "./assets/ria-teacher.webp", width: 720, height: 629 });
 const LOVE_REPORT_LOGO = Object.freeze({ src: "./assets/love-report-logo.webp", width: 1000, height: 333 });
@@ -196,7 +198,7 @@ function loadState() {
       ...saved,
       screen: restoredScreen,
       sharePanelOpen: saved.sharePanelOpen || ["share", "upload", "code"].includes(saved.screen),
-      campaignUnlocked: saved.campaignUnlocked || saved.screen === "code",
+      campaignUnlocked: CAMPAIGN_SUBMISSION_MODE === "upload" && (saved.campaignUnlocked || saved.screen === "code"),
       answers: Array.isArray(saved.answers) ? saved.answers.slice(0, 5) : [],
     };
   } catch (_) {
@@ -365,6 +367,9 @@ function ratingsMarkup(result) {
 }
 
 function rewardMarkup() {
+  const supportMode = CAMPAIGN_SUBMISSION_MODE === "support";
+  const step3 = supportMode ? "問い合わせ窓口へ<br>スクショを送信" : "スクショを<br>アップロード";
+  const step4 = supportMode ? "運営で確認後<br>後日お届け" : "キャンペーン<br>コードを受け取る";
   return `<section class="reward-card">
     <p class="reward-ribbon">シェアしてポイントゲット！</p>
     <div class="reward-heading">
@@ -376,8 +381,8 @@ function rewardMarkup() {
     <div class="steps" aria-label="参加方法">
       <div class="step"><span class="step-no">1</span><span>${HASHTAG}を付けて<br>SNSへ投稿</span></div>
       <div class="step"><span class="step-no">2</span><span>投稿画面の<br>スクショを撮影</span></div>
-      <div class="step"><span class="step-no">3</span><span>スクショを<br>アップロード</span></div>
-      <div class="step"><span class="step-no">4</span><span>キャンペーン<br>コードを受け取る</span></div>
+      <div class="step"><span class="step-no">3</span><span>${step3}</span></div>
+      <div class="step"><span class="step-no">4</span><span>${step4}</span></div>
     </div>
   </section>`;
 }
@@ -412,7 +417,7 @@ function sharePanelMarkup() {
 }
 
 function codeMarkup() {
-  if (!state.campaignUnlocked) return "";
+  if (!state.campaignUnlocked || !CAMPAIGN_CODE) return "";
   return `<section class="code-card" id="campaign-code-section" tabindex="-1">
     <p class="thanks">アップロード完了！</p>
     <h2 class="code-reward"><span>コードを入力して</span><span>100ptゲットしよう！</span></h2>
@@ -449,6 +454,26 @@ function uploadMarkup() {
   </section>`;
 }
 
+function supportSubmissionMarkup() {
+  return `<section class="upload-inline support-submission" id="support-submission">
+    <div class="upload-heading">
+      <div><span class="flow-badge flow-badge-upload">シェア後はここ</span><h2>投稿できたらスクショを送ろう！</h2></div>
+    </div>
+    <p class="upload-lead">SNSに投稿した画面のスクリーンショットを、問い合わせ窓口からお送りください。</p>
+    <a class="cta cta-blue support-cta" href="${SUPPORT_URL}">問い合わせ窓口へスクショを送る</a>
+    <div class="support-followup">
+      <p class="support-timing">確認後、キャンペーンコードを<span class="text-nowrap">後日</span>お送りします。</p>
+    </div>
+    <p class="code-note support-note">※ポイントの受け取りは1アカウントにつき1回までです</p>
+  </section>`;
+}
+
+function campaignSubmissionMarkup() {
+  if (CAMPAIGN_SUBMISSION_MODE === "support") return supportSubmissionMarkup();
+  if (CAMPAIGN_SUBMISSION_MODE === "upload") return uploadMarkup();
+  throw new Error(`Unsupported campaign submission mode: ${CAMPAIGN_SUBMISSION_MODE}`);
+}
+
 function renderResult() {
   const result = resultData();
   return `<section class="screen result-wrap${result.id === TYPE_IDS.LOYAL ? " result-loyal" : ""}" style="--accent:${result.accentColor};--accent-soft:${result.accentSoft};--accent-deep:${result.accentDeep}">
@@ -470,7 +495,7 @@ function renderResult() {
     <section class="journey-card glass-card">
       ${rewardMarkup()}
       ${sharePanelMarkup()}
-      ${uploadMarkup()}
+      ${campaignSubmissionMarkup()}
     </section>
   </section>`;
 }
@@ -524,6 +549,7 @@ function navigateAction(target) {
 }
 
 function handleFileSelection(event) {
+  if (CAMPAIGN_SUBMISSION_MODE !== "upload") return;
   const file = event.target.files?.[0];
   uploadError = "";
   if (!file) return;
@@ -549,6 +575,7 @@ function handleFileSelection(event) {
 }
 
 async function uploadScreenshot() {
+  if (CAMPAIGN_SUBMISSION_MODE !== "upload") return false;
   if (!selectedUpload) {
     uploadError = "先にスクリーンショットを選択してください。";
     render();
@@ -897,6 +924,7 @@ function copyShareText() {
 }
 
 async function copyCampaignCode() {
+  if (CAMPAIGN_SUBMISSION_MODE !== "upload" || !CAMPAIGN_CODE) return false;
   const copied = await copyText(CAMPAIGN_CODE, "キャンペーンコードをコピーしました");
   if (!copied) return;
   const button = document.querySelector("#copy-code");
@@ -954,7 +982,7 @@ window.addEventListener("popstate", (event) => {
   if (SCREEN_TITLES[normalizedScreen]) {
     state.screen = normalizedScreen;
     if (["share", "upload", "code"].includes(screen)) state.sharePanelOpen = true;
-    if (screen === "code") state.campaignUnlocked = true;
+    if (screen === "code" && CAMPAIGN_SUBMISSION_MODE === "upload") state.campaignUnlocked = true;
     persistState();
     render();
   }

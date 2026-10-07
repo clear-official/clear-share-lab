@@ -6,7 +6,7 @@ Repository: `clear-share-lab`
 
 First content: **恋愛通知表**
 
-Last updated: 2026-09-24
+Last updated: 2026-10-07
 
 ---
 
@@ -69,17 +69,18 @@ Question count shown to users:
 5. result screen
 6. reward explanation
 7. share result
-8. upload screenshot of SNS post
-9. receive campaign code
-10. open Clear campaign-code screen
+8. open the support contact page
+9. send a screenshot of the SNS post through support
+10. receive a campaign code manually after review
+11. enter the code in Clear
 
 ### Reward
 
 **100pt**
 
-### Clear campaign-code destination
+### Current support contact destination
 
-`https://app-clear.com/open?act=campaign_code`
+`https://app-clear.com/open?act=page_contact`
 
 ---
 
@@ -454,8 +455,9 @@ Then:
 
 - 100pt reward card
 - share area
-- upload area
-- campaign code area after successful upload/claim
+- support submission area
+
+The retained upload and campaign-code areas are rendered only when the future `upload` mode is enabled.
 
 The overall result screen should feel like a polished report card, not a generic white card UI.
 
@@ -475,8 +477,8 @@ Current four-step explanation:
 
 1. `#CLEARシェアラボ`を付けてSNSへ投稿
 2. 投稿画面のスクショを撮影
-3. スクショをアップロード
-4. キャンペーンコードを受け取る
+3. 問い合わせ窓口へスクショを送信
+4. 運営で確認後、後日お届け
 
 ---
 
@@ -554,15 +556,31 @@ The share image must remain readable after SNS downsizing.
 
 ---
 
-## 14. Upload flow
+## 14. Current support submission flow
 
 User-facing heading:
 
-`投稿できたらスクショをアップロード`
+`投稿できたらスクショを送ろう！`
 
 Supporting copy:
 
-`SNSに投稿した画面のスクリーンショットを選択してください`
+`SNSに投稿した画面のスクリーンショットを、問い合わせ窓口からお送りください。`
+
+CTA:
+
+`問い合わせ窓口へスクショを送る`
+
+Destination:
+
+`https://app-clear.com/open?act=page_contact`
+
+The user is told that the campaign code will be sent later after the screenshot is reviewed. The one-account limit remains visible. The site does not display or distribute a code and does not show code-entry guidance.
+
+`CAMPAIGN_SUBMISSION_MODE` is currently `"support"`. In this mode, the image picker, upload action, completion screen, campaign code, copy action, point CTA, and code-entry guidance must remain unavailable and hidden.
+
+The existing image selection, preview, mock upload, completion, campaign-code, copy, and point CTA code is retained for a possible future `"upload"` mode. Do not add image storage, Google Drive, GAS, external storage, or automatic code issuance until the development team provides an approved plan.
+
+### Future upload mode
 
 Current recovered implementation only validates the selected file on the front end and uses a mock upload delay.
 This is not production-complete.
@@ -678,7 +696,7 @@ Do not expose predictable public image URLs.
 
 Do not embed the production campaign code directly in client-side JavaScript.
 
-The recovered site currently exposes the code in the browser source. This is a known temporary implementation and must be fixed before production.
+The retained upload-mode UI currently has no campaign-code value in the browser source. Any future code must be returned by an approved server flow after a successful claim.
 
 Preferred architecture:
 
@@ -741,6 +759,7 @@ Recovered implementation:
 - canvas-based share image generation
 - Web Share API where supported
 - fallback image download / text copy
+- `CAMPAIGN_SUBMISSION_MODE` switch between the current `support` flow and retained future `upload` flow
 
 Current `localStorage` key:
 
@@ -789,8 +808,10 @@ At minimum verify:
 - reward section
 - share section
 - share image preview
-- upload section
-- code section
+- support submission section and contact CTA
+- hidden upload/code UI in `support` mode
+
+When `upload` mode is explicitly enabled in the future, also verify the upload and code sections.
 
 No horizontal scrolling.
 No clipped copy.
@@ -811,6 +832,9 @@ Before final production release:
 - [ ] teacher comment not truncated
 - [ ] official hashtag is `#CLEARシェアラボ`
 - [ ] X / LINE / Web Share flows checked
+- [ ] current submission mode is explicitly confirmed
+- [ ] support mode sends users to the approved contact destination
+- [ ] upload/code UI is hidden and inactive in support mode
 - [ ] screenshot upload uses real server/storage
 - [ ] privacy notice displayed
 - [ ] upload validation exists server-side
@@ -824,4 +848,3 @@ Before final production release:
 - [ ] iPhone Safari tested
 - [ ] no new console errors
 - [ ] failure paths tested
-
