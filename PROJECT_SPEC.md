@@ -475,10 +475,12 @@ Reward:
 
 Current four-step explanation:
 
-1. `#CLEARシェアラボ`を付けてSNSへ投稿
+1. `#CLEARシェアラボ`を付けてSNSに投稿
 2. 投稿画面のスクショを撮影
-3. 問い合わせ窓口へスクショを送信
-4. 運営で確認後、後日お届け
+3. スクショを問い合わせ窓口へ送信
+4. 確認でき次第、ポイント受け取り用のコードをお送りします
+
+Display these steps vertically. Below step 4, show `順次対応いたします（翌日になる場合もございます）` as plain text without a box.
 
 ---
 
@@ -488,9 +490,7 @@ Heading:
 
 `この結果をシェアしよう`
 
-Hashtag:
-
-`#CLEARシェアラボ`
+The hashtag appears in reward step 1 and in the copied/share text. Do not repeat it as a separate heading in the share area.
 
 Buttons:
 
@@ -558,23 +558,15 @@ The share image must remain readable after SNS downsizing.
 
 ## 14. Current support submission flow
 
-User-facing heading:
-
-`投稿できたらスクショを送ろう！`
-
-Supporting copy:
-
-`SNSに投稿した画面のスクリーンショットを、問い合わせ窓口からお送りください。`
-
 CTA:
 
-`問い合わせ窓口へスクショを送る`
+`問い合わせ窓口はこちら`
 
 Destination:
 
 `https://app-clear.com/open?act=page_contact`
 
-The user is told that the campaign code will be sent later after the screenshot is reviewed. The one-account limit remains visible. The site does not display or distribute a code and does not show code-entry guidance.
+Reward step 4 explains that a `ポイント受け取り用のコード` will be sent after confirmation. The plain-text timing note says `順次対応いたします（翌日になる場合もございます）`. The support area shows only the contact CTA and `※ポイントの受け取りはお一人様1回までです`; it does not repeat the steps. The site does not display or distribute a code and does not show code-entry guidance.
 
 `CAMPAIGN_SUBMISSION_MODE` is currently `"support"`. In this mode, the image picker, upload action, completion screen, campaign code, copy action, point CTA, and code-entry guidance must remain unavailable and hidden.
 

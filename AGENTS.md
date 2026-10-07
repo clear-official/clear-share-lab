@@ -284,7 +284,16 @@ Current support contact destination:
 
 Current main CTA:
 
-**問い合わせ窓口へスクショを送る**
+**問い合わせ窓口はこちら**
+
+The current support-mode reward steps run vertically in this order:
+
+1. `#CLEARシェアラボ`を付けてSNSに投稿
+2. 投稿画面のスクショを撮影
+3. スクショを問い合わせ窓口へ送信
+4. 確認でき次第、ポイント受け取り用のコードをお送りします
+
+Below step 4, show `順次対応いたします（翌日になる場合もございます）` as plain text. The one-person limit reads `※ポイントの受け取りはお一人様1回までです`.
 
 ---
 
@@ -424,9 +433,9 @@ After any meaningful change, verify at minimum:
 - share buttons work or fall back correctly
 
 ### Current support/reward
-- support submission heading and CTA are visible
+- four vertically ordered support steps and the contact CTA are visible
 - support CTA points to `https://app-clear.com/open?act=page_contact`
-- later manual code delivery and the one-account limit are explained
+- later manual code delivery, possible next-day response, and the one-person limit are explained
 - image selection/upload controls and completion UI are not visible
 - campaign code value, code copy, point CTA, and code-entry guidance are not visible
 

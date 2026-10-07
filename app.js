@@ -12,7 +12,7 @@ const PAPER_REPORT_IMAGE = Object.freeze({ src: "./assets/paper-report.webp", wi
 const PAPER_MESSAGE_IMAGE = Object.freeze({ src: "./assets/paper-message-card.webp", width: 1200, height: 675 });
 const POINT_COIN_IMAGE = Object.freeze({ src: "./assets/point-coin.webp", width: 360, height: 336 });
 const SHARE_CONFIG = Object.freeze({
-  displayHashtag: "＃CLEARシェアラボ",
+  displayHashtag: "#CLEARシェアラボ",
   socialHashtag: "#CLEARシェアラボ",
   shareUrl: "https://clear-love-report-2026.nakamura-s391270.chatgpt.site/",
   xText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n\n${SHARE_CONFIG.socialHashtag}`,
@@ -368,22 +368,23 @@ function ratingsMarkup(result) {
 
 function rewardMarkup() {
   const supportMode = CAMPAIGN_SUBMISSION_MODE === "support";
-  const step3 = supportMode ? "問い合わせ窓口へ<br>スクショを送信" : "スクショを<br>アップロード";
-  const step4 = supportMode ? "運営で確認後<br>後日お届け" : "キャンペーン<br>コードを受け取る";
-  return `<section class="reward-card">
+  const step3 = supportMode ? "スクショを問い合わせ窓口へ送信" : "スクショを<br>アップロード";
+  const step4 = supportMode ? "確認でき次第、ポイント受け取り用のコードをお送りします" : "キャンペーン<br>コードを受け取る";
+  return `<section class="reward-card${supportMode ? " support-reward" : ""}">
     <p class="reward-ribbon">シェアしてポイントゲット！</p>
     <div class="reward-heading">
       <img class="point-coin reward-coin reward-coin-left" src="${POINT_COIN_IMAGE.src}" alt="" width="${POINT_COIN_IMAGE.width}" height="${POINT_COIN_IMAGE.height}" aria-hidden="true" loading="lazy" decoding="async" />
       <p class="reward-points"><strong>100pt</strong><span>GET</span></p>
       <span class="reward-coin-pair" aria-hidden="true"><img class="point-coin reward-coin reward-coin-right" src="${POINT_COIN_IMAGE.src}" alt="" width="${POINT_COIN_IMAGE.width}" height="${POINT_COIN_IMAGE.height}" loading="lazy" decoding="async" /><img class="point-coin reward-coin reward-coin-small" src="${POINT_COIN_IMAGE.src}" alt="" width="${POINT_COIN_IMAGE.width}" height="${POINT_COIN_IMAGE.height}" loading="lazy" decoding="async" /></span>
     </div>
-    <p class="reward-caption">投稿画面のスクショを送るだけ</p>
+    ${supportMode ? "" : `<p class="reward-caption">投稿画面のスクショを送るだけ</p>`}
     <div class="steps" aria-label="参加方法">
-      <div class="step"><span class="step-no">1</span><span>${HASHTAG}を付けて<br>SNSへ投稿</span></div>
-      <div class="step"><span class="step-no">2</span><span>投稿画面の<br>スクショを撮影</span></div>
+      <div class="step"><span class="step-no">1</span><span>${supportMode ? `${SHARE_CONFIG.socialHashtag}を付けて<br>SNSに投稿` : `${HASHTAG}を付けて<br>SNSへ投稿`}</span></div>
+      <div class="step"><span class="step-no">2</span><span>${supportMode ? "投稿画面のスクショを撮影" : "投稿画面の<br>スクショを撮影"}</span></div>
       <div class="step"><span class="step-no">3</span><span>${step3}</span></div>
       <div class="step"><span class="step-no">4</span><span>${step4}</span></div>
     </div>
+    ${supportMode ? `<p class="reward-response-time">順次対応いたします（翌日になる場合もございます）</p>` : ""}
   </section>`;
 }
 
@@ -394,9 +395,7 @@ function sharePanelMarkup() {
   const lineUrl = `https://line.me/R/share?text=${encodeURIComponent(lineMessage)}`;
   return `<section class="share-panel" id="share-panel">
     <div class="share-panel-heading">
-      <span class="flow-badge">まずはシェア</span>
       <h2>この結果をシェアしよう</h2>
-      <p class="hashtag">${HASHTAG}</p>
     </div>
     <div class="share-canvas-wrap">
       <p class="share-image-loading" id="share-image-loading" role="status">シェア画像を準備中…</p>
@@ -432,7 +431,7 @@ function codeMarkup() {
     </ol>
     <a class="cta cta-blue app-code-cta" href="https://app-clear.com/open?act=campaign_code">100ptゲットする</a>
     <p class="code-help">コピーしたコードを入力してください。</p>
-    <p class="code-note">※ポイントの受け取りは1アカウントにつき1回までです</p>
+    <p class="code-note">※ポイントの受け取りはお一人様1回までです</p>
     <button class="restart-link" id="restart-button">もう一度診断する</button>
   </section>`;
 }
@@ -455,16 +454,9 @@ function uploadMarkup() {
 }
 
 function supportSubmissionMarkup() {
-  return `<section class="upload-inline support-submission" id="support-submission">
-    <div class="upload-heading">
-      <div><span class="flow-badge flow-badge-upload">シェア後はここ</span><h2>投稿できたらスクショを送ろう！</h2></div>
-    </div>
-    <p class="upload-lead">SNSに投稿した画面のスクリーンショットを、問い合わせ窓口からお送りください。</p>
-    <a class="cta cta-blue support-cta" href="${SUPPORT_URL}">問い合わせ窓口へスクショを送る</a>
-    <div class="support-followup">
-      <p class="support-timing">確認後、キャンペーンコードを<span class="text-nowrap">後日</span>お送りします。</p>
-    </div>
-    <p class="code-note support-note">※ポイントの受け取りは1アカウントにつき1回までです</p>
+  return `<section class="support-submission" id="support-submission" aria-label="問い合わせ窓口">
+    <a class="cta cta-blue support-cta" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a>
+    <p class="code-note support-note">※ポイントの受け取りはお一人様1回までです</p>
   </section>`;
 }
 
@@ -492,7 +484,7 @@ function renderResult() {
       <aside class="teacher-note"><div class="teacher-note-head"><img class="teacher-face" src="${TEACHER_IMAGE.src}" alt="リアちゃん先生" width="${TEACHER_IMAGE.width}" height="${TEACHER_IMAGE.height}" loading="lazy" decoding="async" /><h3>先生からのひとこと</h3></div><p class="teacher-text">${result.teacherComment}</p></aside>
       <div class="summary-inline"><h3><span>総評</span></h3><p class="summary-text">${result.summary}</p></div>
     </section>
-    <section class="journey-card glass-card">
+    <section class="journey-card glass-card${CAMPAIGN_SUBMISSION_MODE === "support" ? " support-journey" : ""}">
       ${rewardMarkup()}
       ${sharePanelMarkup()}
       ${campaignSubmissionMarkup()}
