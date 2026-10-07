@@ -512,11 +512,15 @@ Do not add a separate “投稿できましたか？” confirmation step.
 
 General share structure:
 
-`恋愛通知表やってみた！`
+`恋愛通知表やってみた💗`
 `私は「○○タイプ」でした！`
+
 `#CLEARシェアラボ`
 
-The site share URL is `https://clear-official.github.io/clear-share-lab/#home` and is appended where appropriate. Opening this link starts at TOP even when that browser has a saved result.
+`よかったらやってみてね👇`
+`https://clear-official.github.io/clear-share-lab/`
+
+X, LINE, and copied text include the URL on its own line. Web Share passes the invitation as `text` and the same URL as `url`.
 
 ---
 

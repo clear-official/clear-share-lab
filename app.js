@@ -14,10 +14,8 @@ const POINT_COIN_IMAGE = Object.freeze({ src: "./assets/point-coin.webp", width:
 const SHARE_CONFIG = Object.freeze({
   displayHashtag: "#CLEARシェアラボ",
   socialHashtag: "#CLEARシェアラボ",
-  shareUrl: "https://clear-official.github.io/clear-share-lab/#home",
-  xText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n\n${SHARE_CONFIG.socialHashtag}`,
-  lineText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n${SHARE_CONFIG.socialHashtag}`,
-  generalText: (result) => `恋愛通知表やってみた！\n私は「${result.typeName}」でした！\n\n${SHARE_CONFIG.socialHashtag}`,
+  shareUrl: "https://clear-official.github.io/clear-share-lab/",
+  generalText: (result) => `恋愛通知表やってみた💗\n私は「${result.typeName}」でした！\n\n${SHARE_CONFIG.socialHashtag}\n\nよかったらやってみてね👇`,
 });
 const HASHTAG = SHARE_CONFIG.displayHashtag;
 
@@ -389,9 +387,8 @@ function rewardMarkup() {
 }
 
 function sharePanelMarkup() {
-  const result = resultData();
-  const xUrl = `https://twitter.com/intent/tweet?${new URLSearchParams({ text: SHARE_CONFIG.xText(result), url: SHARE_CONFIG.shareUrl })}`;
-  const lineMessage = `${SHARE_CONFIG.lineText(result)}\n${SHARE_CONFIG.shareUrl}`;
+  const xUrl = `https://twitter.com/intent/tweet?${new URLSearchParams({ text: shareText() })}`;
+  const lineMessage = shareText();
   const lineUrl = `https://line.me/R/share?text=${encodeURIComponent(lineMessage)}`;
   return `<section class="share-panel" id="share-panel">
     <div class="share-panel-heading">
@@ -601,8 +598,9 @@ function mockUploadService(file) {
   }, 1100));
 }
 
-function shareText() {
-  return SHARE_CONFIG.generalText(resultData());
+function shareText(includeUrl = true) {
+  const text = SHARE_CONFIG.generalText(resultData());
+  return includeUrl ? `${text}\n${SHARE_CONFIG.shareUrl}` : text;
 }
 
 const imageCache = new Map();
@@ -870,7 +868,7 @@ async function shareToOtherApps() {
   const file = new File([blob], `clear-love-report-${resultData().id}.png`, { type: "image/png" });
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ title: "恋愛通知表", text: shareText(), url: SHARE_CONFIG.shareUrl, files: [file] });
+      await navigator.share({ title: "恋愛通知表", text: shareText(false), url: SHARE_CONFIG.shareUrl, files: [file] });
       return;
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -878,7 +876,7 @@ async function shareToOtherApps() {
   }
   if (navigator.share) {
     try {
-      await navigator.share({ title: "恋愛通知表", text: shareText(), url: SHARE_CONFIG.shareUrl });
+      await navigator.share({ title: "恋愛通知表", text: shareText(false), url: SHARE_CONFIG.shareUrl });
       return;
     } catch (error) {
       if (error.name === "AbortError") return;
