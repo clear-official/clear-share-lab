@@ -60,13 +60,21 @@ assert.ok(tieCases.normalized > 0);
 assert.ok(tieCases.latest > 0);
 
 function makeApp(urlText, { withCanvas = false } = {}) {
-  const app = { innerHTML: "", addEventListener(_name, handler) { this.clickHandler = handler; } };
+  const answerButtons = Array.from({ length: 4 }, (_, choice) => ({
+    dataset: { action: "answer", choice: String(choice) },
+    attributes: {},
+    setAttribute(name, value) { this.attributes[name] = value; },
+    disabled: false,
+  }));
+  const app = { innerHTML: "", addEventListener(_name, handler) { this.clickHandler = handler; }, querySelectorAll() { return answerButtons; } };
+  const timers = new Map();
+  let nextTimer = 0;
   const classes = new Set();
   const drawnText = [];
   const drawing = {
     font: "16px sans-serif",
     beginPath() {}, moveTo() {}, lineTo() {}, arcTo() {}, closePath() {},
-    fill() {}, stroke() {}, fillRect() {}, arc() {}, setLineDash() {}, drawImage() { this.imageCount += 1; },
+    fill() {}, stroke() {}, fillRect() {}, arc() {}, setLineDash() {}, strokeText() {}, drawImage() { this.imageCount += 1; },
     imageCount: 0,
     fillText(text, x, y) { drawnText.push({ text, x, y }); },
     measureText(text) {
@@ -118,14 +126,23 @@ function makeApp(urlText, { withCanvas = false } = {}) {
       getItem(key) { return storage.get(key) || null; },
       setItem(key, value) { storage.set(key, value); },
     },
-    URL, URLSearchParams, Blob, Image, console, setTimeout, clearTimeout,
+    URL, URLSearchParams, Blob, Image, console,
+    setTimeout(callback) { const id = ++nextTimer; timers.set(id, callback); return id; },
+    clearTimeout(id) { timers.delete(id); },
   });
   vm.runInContext(contentSource, context);
   vm.runInContext(appSource, context);
   async function click(action, other = {}) {
-    await app.clickHandler({ target: { closest() { return { dataset: { action, ...other } }; } } });
+    const control = action === "answer" ? answerButtons[Number(other.choice)] : { dataset: { action, ...other } };
+    await app.clickHandler({ target: { closest() { return control; } } });
   }
-  return { app, location, document, click, window, drawing, drawnText, saveButton, shareButton };
+  function advanceAnswer() {
+    const [id, callback] = Array.from(timers.entries()).at(-1) || [];
+    assert.ok(callback, "回答後の自動遷移が予約される");
+    timers.delete(id);
+    callback();
+  }
+  return { app, location, document, click, advanceAnswer, answerButtons, window, drawing, drawnText, saveButton, shareButton };
 }
 
 for (const [type, choices] of examples) {
@@ -136,11 +153,22 @@ for (const [type, choices] of examples) {
   for (let index = 0; index < 7; index += 1) {
     assert.equal(site.location.hash, `#q-${index + 1}`);
     assert.ok(site.app.innerHTML.includes(data.questions[index].text));
+    assert.doesNotMatch(site.app.innerHTML, /data-action="next"/);
+    assert.match(site.app.innerHTML, /class="kitchen-props"/);
+    assert.match(site.app.innerHTML, /class="cooking-utensil"/);
     for (const answer of data.questions[index].answers) assert.ok(site.app.innerHTML.includes(answer.text));
     await site.click("answer", { choice: String(choices[index]) });
-    assert.match(site.app.innerHTML, /aria-pressed="true"/);
-    await site.click("next");
+    assert.equal(site.answerButtons[choices[index]].attributes["aria-pressed"], "true");
+    await site.click("answer", { choice: String((choices[index] + 1) % 4) });
+    assert.equal(site.answerButtons[choices[index]].attributes["aria-pressed"], "true", "連打で回答を変えない");
+    site.advanceAnswer();
   }
+  assert.equal(site.location.hash, "#result");
+  await site.click("back", { target: "q-7" });
+  assert.equal(site.location.hash, "#q-7");
+  assert.match(site.app.innerHTML, /aria-pressed="true"/, "前の設問に戻っても回答が残る");
+  await site.click("answer", { choice: String(choices[6]) });
+  site.advanceAnswer();
   assert.equal(site.location.hash, "#result");
   const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.id === data.resolveHiddenFlavor(choices));
@@ -164,11 +192,11 @@ for (const type of types) {
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(card.saveButton.disabled, false, `保存ボタン: ${type}`);
   assert.equal(card.shareButton.disabled, false, `共有ボタン: ${type}`);
-  assert.equal(card.drawing.imageCount, 1, `料理画像: ${type}`);
+  assert.equal(card.drawing.imageCount, 2, `料理画像とリアちゃん: ${type}`);
   const text = card.drawnText.map((entry) => entry.text).join("");
   const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.type === alternate);
-  for (const copy of [result.name, result.description, result.sealTop, result.sealBottom, flavor.hiddenFlavorText]) {
+  for (const copy of [result.name, result.ingredients, result.description, result.tip, result.sealTop, result.sealBottom, flavor.hiddenFlavorText]) {
     assert.ok(text.includes(copy), `カードの文字: ${type} ${copy}`);
   }
   assert.ok(card.drawnText.every(({ x, y }) => x >= 0 && x <= 1200 && y >= 0 && y <= 1500));
