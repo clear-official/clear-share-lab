@@ -69,7 +69,7 @@ const RECIPE_QUESTIONS = [
 
 const RECIPE_RESULTS = [
   {
-    id: "omurice", type: "A", image: "../assets/recipe/omurice.png", dish: "オムライス",
+    id: "omurice", type: "A", image: "../assets/recipe/card-omurice.png", dish: "オムライス",
     name: "名物まかないプレート", ingredients: "まず試す力／形にする力",
     description: "思いついたら、まず一歩。動きながら「これでいこう」を見つけていく人です。",
     tip: "思いついたことが増えたら、まず一つを仕上げてみて。",
@@ -77,7 +77,7 @@ const RECIPE_RESULTS = [
     hiddenFlavorText: "まず試してみる軽やかさ",
   },
   {
-    id: "curry", type: "B", image: "../assets/recipe/curry.png", dish: "好き全部のせカレー",
+    id: "curry", type: "B", image: "../assets/recipe/card-curry.png", dish: "好き全部のせカレー",
     name: "好き全部のせカレー", ingredients: "好奇心／深掘りする力",
     description: "気になるものは、詳しく知るほど楽しくなる。好きなことから自分らしさが広がります。",
     tip: "気になったことを誰かに話すと、好きがもっと広がりそう。",
@@ -85,7 +85,7 @@ const RECIPE_RESULTS = [
     hiddenFlavorText: "気になることを掘り下げる好奇心",
   },
   {
-    id: "soup", type: "C", image: "../assets/recipe/soup.png", dish: "スープ",
+    id: "soup", type: "C", image: "../assets/recipe/card-soup.png", dish: "スープ",
     name: "ほっとさせるあったかスープ", ingredients: "気づく力／思いやり",
     description: "相手の希望や困ることに目が向く人。みんなが心地よく過ごせる形を探せます。",
     tip: "相手の希望を聞いたあと、自分の希望も一緒に伝えてみて。",
@@ -93,7 +93,7 @@ const RECIPE_RESULTS = [
     hiddenFlavorText: "相手の希望に目を向ける気づかい",
   },
   {
-    id: "course", type: "D", image: "../assets/recipe/course.png", dish: "焼き魚が主役の三品コース",
+    id: "course", type: "D", image: "../assets/recipe/card-course.png", dish: "焼き魚が主役の三品コース",
     name: "先読みフルコース", ingredients: "見通す力／段取り力",
     description: "時間や条件を確かめて、次に必要なことを考えられる人。準備が整うほど力を発揮します。",
     tip: "予定に少し余白を作ると、当日の楽しみも増えそう。",
@@ -101,7 +101,7 @@ const RECIPE_RESULTS = [
     hiddenFlavorText: "条件を確かめて整える視点",
   },
   {
-    id: "pasta", type: "E", image: "../assets/recipe/pasta.png", dish: "きのこと青菜のパスタ",
+    id: "pasta", type: "E", image: "../assets/recipe/card-pasta.png", dish: "きのこと青菜のパスタ",
     name: "逆転アレンジパスタ", ingredients: "切り替え力／工夫する力",
     description: "予定どおりにいかなくても、手元にあるものから別の道を見つけられる人です。",
     tip: "うまくいったアレンジは、次のために覚えておいて。",
@@ -109,7 +109,7 @@ const RECIPE_RESULTS = [
     hiddenFlavorText: "別の方法を見つける柔軟さ",
   },
   {
-    id: "stew", type: "F", image: "../assets/recipe/stew.png", dish: "クリームシチュー",
+    id: "stew", type: "F", image: "../assets/recipe/card-stew.png", dish: "クリームシチュー",
     name: "じっくり煮込みシチュー", ingredients: "自分のペース／続ける力",
     description: "急がず、できるところから重ねていく人。時間をかけて自分らしい仕上がりを育てます。",
     tip: "小さな変化も振り返ると、積み重ねた分が見えてくるよ。",

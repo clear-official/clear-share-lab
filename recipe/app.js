@@ -5,6 +5,9 @@ const STORAGE_KEY = "clearShareLab_recipe_v1";
 const SUPPORT_URL = "https://app-clear.com/open?act=page_contact";
 const SHARE_URL = "https://clear-official.github.io/clear-share-lab/recipe/";
 const HASHTAG = "#CLEARシェアラボ";
+const CHEF_IMAGE = "../assets/recipe/chef-latest.png";
+const TITLE_IMAGE = "../assets/recipe/title-latest.png";
+const BACKGROUND_IMAGE = "../assets/recipe/background-latest.png";
 const app = document.querySelector("#app");
 const images = new Map();
 let navigationLocked = false;
@@ -100,11 +103,7 @@ function displayedResult(page = route()) {
   return page.preview ? previewResult(page.previewType) : currentResult();
 }
 function titleMarkup(quiz = false) {
-  return `<div class="fork-title${quiz ? " quiz-logo" : ""}">
-    <svg class="utensil fork" viewBox="0 0 28 45" aria-hidden="true"><path fill="currentColor" d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg>
-    <span>私の隠しレシピ診断</span>
-    <svg class="utensil spoon" viewBox="0 0 28 45" aria-hidden="true"><path fill="currentColor" d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg>
-  </div><div class="dotted" aria-hidden="true"></div>`;
+  return `<div class="section-title${quiz ? " quiz-logo" : ""}"><img src="${TITLE_IMAGE}" alt="私の隠しレシピ診断" width="800" height="202"></div><div class="dotted" aria-hidden="true"></div>`;
 }
 function shell(body, back = "", variant = "") {
   return `<section class="paper${variant ? ` ${variant}` : ""}"><div class="topline"><span class="brand">Clear シェアラボ</span>${back ? `<button class="back" data-action="back" data-target="${back}">← 戻る</button>` : ""}</div>${body}</section>`;
@@ -150,10 +149,10 @@ function homeView() {
       <span>SNSシェアイベント</span>
       <svg class="utensil spoon" viewBox="0 0 28 45" aria-hidden="true"><path fill="currentColor" d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg>
     </div><div class="dotted" aria-hidden="true"></div></div>
-    <h1 class="home-logo"><img src="../assets/recipe/title-logo.png" alt="私の隠しレシピ診断" width="1732" height="908" fetchpriority="high"></h1>
+    <h1 class="home-logo"><img src="${TITLE_IMAGE}" alt="私の隠しレシピ診断" width="800" height="202" fetchpriority="high"></h1>
     <p class="mini-count">全7問</p>
     <div class="kitchen-scene">
-      <img class="hero-chef" src="../assets/recipe/chef-start.png" alt="フライパンを持ったシェフのリアちゃん" width="1254" height="1254">
+      <img class="hero-chef" src="${CHEF_IMAGE}" alt="フライパンを持ったシェフのリアちゃん" width="1572" height="2043">
       ${kitchenPropsMarkup()}
     </div>
     <button class="primary home-start" data-action="start" ${READY ? "" : "disabled"}>レシピを開発する <span aria-hidden="true">›</span></button>
@@ -167,11 +166,11 @@ function quizView(index) {
   return shell(`<header class="quiz-head">${titleMarkup(true)}<p class="quiz-progress-text">${index + 1}/7</p><ol class="progress-dots" aria-label="全7問の進捗">${progress}</ol></header>
     <div class="question-box"><p class="question-number">第${index + 1}問</p><h1 class="question-text">${escapeHtml(question.text)}</h1></div>
     <div class="answers" role="group" aria-label="回答を選択">${answers}</div>
-    <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="../assets/recipe/chef-cooking.png" alt="料理中のリアちゃん" width="1230" height="1278"><img class="seasoning" src="../assets/recipe/seasoning.png" alt="" aria-hidden="true" width="1254" height="1254"></div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
+    <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${CHEF_IMAGE}" alt="料理中のリアちゃん" width="1572" height="2043"></div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }
 function resultView(result) {
-  return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="../assets/recipe/chef-start.png" alt="" aria-hidden="true" width="1254" height="1254"><p class="eyebrow">あなたの隠しレシピは…</p></div><h1 class="result-title">${escapeHtml(result.name)}</h1><div class="result-title-rule" aria-hidden="true"></div>
-    <div class="dish-frame"><div class="dish-photo"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div>
+  return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div><h1 class="result-title">${escapeHtml(result.name)}</h1><div class="result-title-rule" aria-hidden="true"></div>
+    <div class="dish-frame"><div class="dish-photo"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1600" height="900"></div></div>
     <section class="result-section result-ingredients"><h2>主成分</h2><p>${escapeHtml(result.ingredients)}</p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
@@ -191,7 +190,7 @@ function shareView(result) {
     <p class="share-note">保存ボタンが使えない端末では、画像を開いて長押しで保存してください。共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
     <div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
     <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p>
-    <section class="reward"><h2>シェアで<strong>100pt</strong>ゲット</h2><ol>
+    <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-latest.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="660" height="280"></h2><ol>
       <li><span class="step-number">1</span><span>診断結果のカード画像と「${HASHTAG}」を付けてSNSに投稿</span></li>
       <li><span class="step-number">2</span><span>投稿先と投稿内容が分かる、画面全体のスクリーンショットを撮影</span></li>
       <li><span class="step-number">3</span><span>スクリーンショットを問い合わせ窓口へ送信</span></li>
@@ -303,13 +302,11 @@ function roundedRect(ctx, x, y, width, height, radius, fill, stroke, lineWidth =
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
 }
-function drawGingham(ctx, y, height) {
-  ctx.fillStyle = "#fff9f7";
-  ctx.fillRect(0, y, 1200, height);
-  // Two translucent bands make the crossings darker without a checkerboard.
-  ctx.fillStyle = "#ef405270";
-  for (let x = 0; x < 1200; x += 40) ctx.fillRect(x, y, 20, height);
-  for (let row = 0; row < height; row += 40) ctx.fillRect(0, y + row, 1200, Math.min(20, height - row));
+function drawGingham(ctx, background, y, height) {
+  for (let x = 0; x < 1200; x += 700) {
+    const width = Math.min(700, 1200 - x);
+    ctx.drawImage(background, 0, 0, width, height, x, y, width, height);
+  }
 }
 function drawContained(ctx, image, x, y, width, height) {
   const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
@@ -347,19 +344,19 @@ async function drawCard(result) {
   if (!canvas) return;
   cardReady = false;
   try {
-    const [image, chef] = await Promise.all([loadImage(result.image), loadImage("../assets/recipe/chef-start.png")]);
+    const [image, chef, title, background] = await Promise.all([
+      loadImage(result.image), loadImage(CHEF_IMAGE), loadImage(TITLE_IMAGE), loadImage(BACKGROUND_IMAGE),
+    ]);
     if (!canvas.isConnected) return;
     await document.fonts?.ready;
     if (!canvas.isConnected) return;
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#fffefa";
     ctx.fillRect(0, 0, 1200, 1500);
-    drawGingham(ctx, 0, 56);
-    drawGingham(ctx, 1444, 56);
-    ctx.fillStyle = "#082856";
+    drawGingham(ctx, background, 0, 56);
+    drawGingham(ctx, background, 1444, 56);
+    drawContained(ctx, title, 450, 65, 300, 76);
     ctx.textAlign = "center";
-    ctx.font = '800 36px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("私の隠しレシピ診断", 600, 109);
     ctx.fillStyle = "#ec183d";
     for (let x = 420; x <= 780; x += 24) {
       ctx.beginPath(); ctx.arc(x, 130, 3, 0, Math.PI * 2); ctx.fill();
@@ -368,21 +365,20 @@ async function drawCard(result) {
     ctx.fillStyle = "#082856";
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 4;
-    const nameTop = nameLayout.lines.length === 1 ? 224 : 180;
+    const nameTop = nameLayout.lines.length === 1 ? 224 : 210;
     nameLayout.lines.forEach((line, index) => {
       const y = nameTop + index * nameLayout.lineHeight;
       ctx.strokeText(line, 600, y);
       ctx.fillText(line, 600, y);
     });
-    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(460, 273); ctx.lineTo(740, 273); ctx.stroke();
+    if (nameLayout.lines.length === 1) {
+      ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(460, 273); ctx.lineTo(740, 273); ctx.stroke();
+    }
 
-    roundedRect(ctx, 42, 294, 1116, 741, 15, "#fffefa", "#183d70", 4);
-    // The photo stays square to the card, with a wider white lower edge.
-    roundedRect(ctx, 73, 319, 1054, 681, 3, "#fff", "#d5dfe9", 2);
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(97, 341, 1006, 602);
-    drawContained(ctx, image, 105, 346, 990, 594);
+    roundedRect(ctx, 42, 294, 1116, 741, 15, "#082856", "#183d70", 4);
+    // The supplied food artwork includes its own straight Polaroid border.
+    ctx.drawImage(image, 292, 84, 1015, 732, 107, 311, 986, 711);
 
     // The result-specific seal sits on the upper-right edge of the photo.
     ctx.beginPath(); ctx.arc(1015, 388, 99, 0, Math.PI * 2);

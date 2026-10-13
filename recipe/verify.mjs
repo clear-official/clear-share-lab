@@ -192,7 +192,7 @@ for (const type of types) {
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(card.saveButton.disabled, false, `保存ボタン: ${type}`);
   assert.equal(card.shareButton.disabled, false, `共有ボタン: ${type}`);
-  assert.equal(card.drawing.imageCount, 2, `料理画像とリアちゃん: ${type}`);
+  assert.equal(card.drawing.imageCount, 7, `料理画像・最新版リアちゃん・タイトル・背景: ${type}`);
   const text = card.drawnText.map((entry) => entry.text).join("");
   const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.type === alternate);

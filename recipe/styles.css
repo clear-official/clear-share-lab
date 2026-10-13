@@ -15,8 +15,8 @@ body {
   margin: 0;
   color: var(--navy);
   background-color: #fff9f7;
-  background-image: repeating-linear-gradient(0deg, #ef40524a 0 17px, transparent 17px 34px), repeating-linear-gradient(90deg, #ef40524a 0 17px, transparent 17px 34px);
-  background-size: 34px 34px;
+  background-image: url("../assets/recipe/background-latest.png");
+  background-size: 350px auto;
 }
 button, a { font: inherit; }
 button { touch-action: manipulation; }
@@ -36,6 +36,8 @@ img { display: block; max-width: 100%; height: auto; }
 .utensil.spoon { transform: rotate(19deg); }
 .utensil.fork { transform: rotate(-19deg); }
 .dotted { height: 6px; width: min(78%, 350px); margin: 10px auto 17px; background: radial-gradient(circle, var(--red) 2px, transparent 2.5px) left center / 13px 6px repeat-x; }
+.section-title { width: min(100%, 350px); margin: 0 auto; }
+.section-title img { width: 100%; }
 .mini-count { text-align: center; font-size: .88rem; font-weight: 800; margin: 14px 0 4px; }
 .hero-chef { width: min(73%, 280px); margin: 2px auto 6px; }
 .primary, .secondary, .share-link { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 57px; padding: 11px 16px; border-radius: 999px; font-weight: 900; font-size: 1.06rem; line-height: 1.45; text-align: center; text-decoration: none; cursor: pointer; }
@@ -48,7 +50,7 @@ img { display: block; max-width: 100%; height: auto; }
 .waiting { margin: 13px 0 0; color: #6d4550; font-size: .88rem; line-height: 1.6; text-align: center; }
 
 /* The cover is a narrow recipe book; the rest of the experience keeps its own layout. */
-body.home-mode { background: #f7eee9; background-image: none; }
+body.home-mode { background-color: #fff9f7; }
 .home-mode .app {
   position: relative;
   display: flex;
@@ -57,8 +59,8 @@ body.home-mode { background: #f7eee9; background-image: none; }
   min-height: 100svh;
   padding: 15px 34px 15px 39px;
   background-color: #fff9f7;
-  background-image: repeating-linear-gradient(0deg, #ef405270 0 17px, transparent 17px 34px), repeating-linear-gradient(90deg, #ef405270 0 17px, transparent 17px 34px);
-  background-size: 34px 34px;
+  background-image: url("../assets/recipe/background-latest.png");
+  background-size: 350px auto;
 }
 .home-mode .app::before {
   content: "";
@@ -105,13 +107,13 @@ body.home-mode { background: #f7eee9; background-image: none; }
 .home-logo { width: min(100%, 470px); margin: 0 auto; }
 .home-logo img { width: 100%; height: auto; }
 .home-paper .mini-count { margin: 7px 0 0; font-size: clamp(.94rem, 3.8vw, 1.22rem); }
-.kitchen-scene { position: relative; width: 100%; height: clamp(208px, 60vw, 345px); margin: 0 auto 5px; }
+.kitchen-scene { position: relative; width: 100%; height: clamp(235px, 68vw, 360px); margin: 0 auto 5px; }
 .kitchen-scene .hero-chef {
   position: absolute;
   z-index: 1;
   left: 51%;
   bottom: 14px;
-  width: min(75%, 315px);
+  width: min(60%, 265px);
   max-width: none;
   margin: 0;
   transform: translateX(-50%);
@@ -128,7 +130,7 @@ body.home-mode { background: #f7eee9; background-image: none; }
 .ribbon-tail-right { right: 0; clip-path: polygon(0 0, 100% 0, 60% 50%, 100% 100%, 0 100%); }
 
 .quiz-head { margin: 0 0 21px; }
-.quiz-logo { font-size: clamp(1.32rem, 6vw, 2.05rem); }
+.quiz-logo { width: min(100%, 310px); }
 .quiz-progress-text { margin: 5px 0 10px; font-size: 1.42rem; font-weight: 900; text-align: center; }
 .progress-dots { display: flex; align-items: center; justify-content: space-between; max-width: 400px; margin: 0 auto; padding: 0 4px; list-style: none; }
 .progress-dots li { position: relative; z-index: 0; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #849bbb; background: #fff; color: transparent; }
@@ -149,25 +151,23 @@ body.home-mode { background: #f7eee9; background-image: none; }
 .cooking-utensil { width: 11px; height: 18px; flex: none; fill: var(--red); stroke: var(--navy); stroke-width: 1.6; stroke-linejoin: round; }
 .cooking-utensil:first-child { transform: rotate(-14deg); }
 .cooking-utensil:last-child { transform: rotate(14deg); }
-.cooking-scene { position: relative; width: 100%; height: clamp(220px, 62vw, 285px); }
-.cooking-scene .chef-cooking { position: absolute; z-index: 1; left: 50%; bottom: 11px; width: min(64%, 230px); transform: translateX(-50%); }
+.cooking-scene { position: relative; width: 100%; height: clamp(245px, 70vw, 315px); }
+.cooking-scene .chef-cooking { position: absolute; z-index: 1; left: 50%; bottom: 11px; width: min(60%, 225px); transform: translateX(-50%); }
 .chef-cooking img:first-child { width: 100%; }
-.seasoning { position: absolute; width: 52%; left: 18%; top: 54%; pointer-events: none; animation: sprinkle 1.5s ease-out infinite; }
 .cooking-scene .kitchen-props { left: -1%; bottom: 0; width: 102%; }
-@keyframes sprinkle { 0% { transform: translateY(-5px); opacity: 0; } 18% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(7px); opacity: 0; } }
 
 .result-paper { padding: 18px 19px 27px; border-radius: 7px; background: #fffefa; box-shadow: 0 5px 16px #08285620; }
 .result-paper::before { inset: 6px; border-radius: 3px; }
-.result-band { height: 18px; margin: 0 -8px 17px; background-color: #fff9f7; background-image: repeating-linear-gradient(0deg, #ef405270 0 9px, transparent 9px 18px), repeating-linear-gradient(90deg, #ef405270 0 9px, transparent 9px 18px); }
+.result-band { height: 18px; margin: 0 -8px 17px; background-color: #fff9f7; background-image: url("../assets/recipe/background-latest.png"); background-size: 210px auto; }
 .result-band-bottom { margin: 24px -8px 0; }
 .result-intro { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 6px auto 0; }
 .result-intro img { width: 84px; height: 84px; object-fit: contain; flex: none; }
 .eyebrow { margin: 0; color: var(--red); font-size: .94rem; font-weight: 800; }
 .result-title { margin: 2px auto 0; max-width: 530px; font-size: clamp(2.02rem, 8.9vw, 3.1rem); font-weight: 800; line-height: 1.26; text-align: center; text-wrap: balance; overflow-wrap: anywhere; -webkit-text-stroke: .55px #fff; text-shadow: 0 1px 0 #fff; }
 .result-title-rule { width: min(58%, 230px); height: 2px; margin: 12px auto 20px; background: var(--navy); box-shadow: 0 5px 0 #ef405280; }
-.dish-frame { width: min(100%, 520px); margin: 0 auto; padding: 12px 12px 25px; border: 1px solid #d8e0e7; background: #fff; box-shadow: 0 3px 0 #0828561c, 0 5px 14px #08285612; }
-.dish-photo { display: grid; place-items: center; width: 100%; aspect-ratio: 1.35; background: #fff; overflow: hidden; }
-.dish-photo img { width: 100%; height: 100%; object-fit: contain; }
+.dish-frame { width: min(100%, 520px); margin: 0 auto; }
+.dish-photo { position: relative; width: 100%; aspect-ratio: 1015 / 732; overflow: hidden; }
+.dish-photo img { position: absolute; top: 50%; left: 50%; width: 157.64%; max-width: none; height: auto; transform: translate(-50%, -50%); }
 .result-section { margin: 18px 0 0; padding: 0; }
 .result-section h2 { margin: 0 0 7px; color: var(--red); font-size: .93rem; letter-spacing: .05em; }
 .result-section p { margin: 0; font-size: 1rem; line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
@@ -188,6 +188,7 @@ body.home-mode { background: #f7eee9; background-image: none; }
 .share-link:hover, .share-link:focus-visible { background: #fff1f1; }
 .reward { margin: 24px 0 0; padding: 15px; border: 2px solid var(--line); border-radius: 13px; }
 .reward h2 { margin: 0 0 12px; font-size: 1.27rem; text-align: center; }
+.reward-banner img { width: 100%; height: auto; }
 .reward strong { color: var(--red); }
 .reward ol { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
 .reward li { display: grid; grid-template-columns: 28px minmax(0,1fr); gap: 10px; align-items: start; line-height: 1.6; }
@@ -208,12 +209,11 @@ body.home-mode { background: #f7eee9; background-image: none; }
   .home-mode .app { padding: 11px 26px 11px 28px; }
   .home-mode .app::before { width: 17px; background: linear-gradient(90deg, #073062 0 3px, #d9e5ef 3px 4px, #073062 4px 8px, #f5e5db 8px 9px, #073062 9px 16px, #001b3d 16px 17px); }
   .home-paper { min-height: min(calc(100svh - 22px), 970px); padding: 26px 18px 27px; }
-  .kitchen-scene { height: 59vw; }
+  .kitchen-scene { height: clamp(235px, 68vw, 360px); }
 }
 @media (max-height: 680px) {
   .hero-chef { width: min(56%, 210px); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .seasoning { animation: none; }
   .toast { transition: none; }
 }
