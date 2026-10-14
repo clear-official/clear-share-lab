@@ -207,16 +207,17 @@ function shareView(result) {
   const line = `https://line.me/R/share?text=${encodeURIComponent(text)}`;
   return shell(`<h1 class="share-heading">レシピカードをシェアしよう</h1>
     <canvas id="recipe-card" class="card-preview" width="1200" height="1500" role="img" aria-label="${escapeHtml(result.name)}のシェア用レシピカード" aria-busy="true"></canvas>
-    <div class="share-actions"><button class="primary" data-action="save" disabled>カード画像を保存</button><a class="secondary" id="open-card" href="#" target="_blank" rel="noopener" hidden>画像を開いて保存する</a><button class="secondary" data-action="share-file" disabled>画像付きで共有する</button><button class="secondary" data-action="copy">投稿文をコピー</button></div>
+    <div class="share-actions"><button class="primary" data-action="share-file" disabled>画像付きで共有する</button>
+      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>カード画像を保存</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><a class="share-fallback-link" id="open-card" href="#" target="_blank" rel="noopener" hidden>保存できない場合はこちら</a></div></div>
     <p class="share-note">保存ボタンが使えない端末では、画像を開いて長押しで保存してください。共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
-    <div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
-    <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p>
+    <details class="share-social"><summary>SNSを選んでシェア</summary><div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
+      <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p></details>
     <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-cover.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="330" height="140"></h2><ol>
       <li><span class="step-number">1</span><span>診断結果のカード画像と「${HASHTAG}」を付けてSNSに投稿</span></li>
       <li><span class="step-number">2</span><span>投稿先と投稿内容が分かる、画面全体のスクリーンショットを撮影</span></li>
       <li><span class="step-number">3</span><span>スクリーンショットを問い合わせ窓口へ送信</span></li>
       <li><span class="step-number">4</span><span>運営側が確認後、100ptを加算</span></li>
-    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small">※ポイントの受け取りはお一人様1回までです。</p></section>`, "result");
+    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small">※ポイントの受け取りはお一人様1回までです。</p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small">※確認状況により、ポイント加算が翌日になる場合があります。</p></section>`, "result");
 }
 
 function render() {
