@@ -208,7 +208,7 @@ function shareView(result) {
     <p class="share-note">保存ボタンが使えない端末では、画像を開いて長押しで保存してください。共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
     <div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
     <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p>
-    <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-latest.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="660" height="280"></h2><ol>
+    <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-cover.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="330" height="140"></h2><ol>
       <li><span class="step-number">1</span><span>診断結果のカード画像と「${HASHTAG}」を付けてSNSに投稿</span></li>
       <li><span class="step-number">2</span><span>投稿先と投稿内容が分かる、画面全体のスクリーンショットを撮影</span></li>
       <li><span class="step-number">3</span><span>スクリーンショットを問い合わせ窓口へ送信</span></li>
