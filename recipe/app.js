@@ -375,10 +375,6 @@ async function drawCard(result) {
     drawGingham(ctx, background, 1444, 56);
     drawContained(ctx, title, 450, 65, 300, 76);
     ctx.textAlign = "center";
-    ctx.fillStyle = "#ec183d";
-    for (let x = 420; x <= 780; x += 24) {
-      ctx.beginPath(); ctx.arc(x, 130, 3, 0, Math.PI * 2); ctx.fill();
-    }
     roundedRect(ctx, 104, 149, 992, 221, 12, "#fff", "#082856", 3);
     roundedRect(ctx, 113, 158, 974, 203, 8, null, "#f2c1c9", 2);
     const nameParts = resultNameParts(result);
@@ -424,10 +420,6 @@ async function drawCard(result) {
     ctx.textAlign = "left";
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("総評", 89, 1033);
-    ctx.fillStyle = "#ec183d";
-    for (const x of [880, 898, 916]) {
-      ctx.beginPath(); ctx.arc(x, 1030, 4, 0, Math.PI * 2); ctx.fill();
-    }
     const summaryText = result.type === "A" ? result.description.replace("動きながら「", "動きながら\n「") : result.description;
     const description = fitLines(ctx, summaryText, 840, 105, 36, 29, 700, 1.34);
     ctx.fillStyle = "#082856";
@@ -444,9 +436,7 @@ async function drawCard(result) {
     const ingredients = fitLines(ctx, result.ingredients, 700, 42, 31, 26, 700, 1.2);
     ctx.fillStyle = "#082856";
     ingredients.lines.forEach((line, index) => ctx.fillText(line, 56, 1285 + index * ingredients.lineHeight));
-    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 2; ctx.setLineDash([5, 7]);
     roundedRect(ctx, 42, 1302, 711, 123, 8, "#fffafb", "#ec9da8", 2);
-    ctx.setLineDash([]);
     roundedRect(ctx, 54, 1308, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";
     ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
