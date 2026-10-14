@@ -192,11 +192,11 @@ function quizView(index) {
 function resultView(result) {
   return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
     <div class="dish-frame"><div class="dish-photo"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="dish-art"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
-    <section class="result-section result-ingredients"><h2>主成分</h2><p>${escapeHtml(result.ingredients)}</p></section>
+    <section class="result-section result-ingredients"><h2>主成分</h2><p>${escapeHtml(result.ingredients)}<span class="ingredient-stamp" aria-hidden="true"></span></p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
     <section class="result-section result-flavor"><h2>隠し味</h2><p>${escapeHtml(result.hiddenFlavor)}</p></section>
-    <div class="result-actions"><button class="primary" data-action="share-page">シェア方法と100pt特典を見る ›</button><button class="secondary" data-action="restart">もう一度診断する</button></div><div class="result-band result-band-bottom" aria-hidden="true"></div>`, "q-7", "result-paper");
+    <div class="result-actions"><button class="primary" data-action="share-page">ポイント獲得方法はコチラ</button><button class="secondary" data-action="restart">もう一度診断する</button></div><div class="result-band result-band-bottom" aria-hidden="true"></div>`, "q-7", "result-paper");
 }
 function shareText(result) {
   return `私の隠しレシピ診断をやってみた！\n結果は「${result.name}」でした。\n\n${HASHTAG}\n\n${SHARE_URL}`;
@@ -383,7 +383,7 @@ async function drawCard(result) {
     const nameParts = resultNameParts(result);
     ctx.font = '900 76px "Meiryo", sans-serif';
     nameParts.forEach((line, index) => {
-      const y = 270 + index * 80;
+      const y = 292 + index * 80;
       const markerWidth = Math.min(940, ctx.measureText(line).width + 28);
       ctx.strokeStyle = "#ffe16b";
       ctx.lineWidth = 29;
