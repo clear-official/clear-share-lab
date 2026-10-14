@@ -113,7 +113,7 @@ function resultNameParts(result) {
   return [chars.slice(0, index).join(""), chars.slice(index).join("")];
 }
 function resultNameMarkup(result) {
-  return resultNameParts(result).map(escapeHtml).join("<wbr>");
+  return resultNameParts(result).map((part) => `<span>${escapeHtml(part)}</span>`).join("");
 }
 function shell(body, back = "", variant = "") {
   return `<section class="paper${variant ? ` ${variant}` : ""}"><div class="topline"><span class="brand">Clear シェアラボ</span>${back ? `<button class="back" data-action="back" data-target="${back}">← 戻る</button>` : ""}</div>${body}</section>`;
@@ -187,7 +187,7 @@ function quizView(index) {
     <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${QUIZ_CHEF_IMAGE}" alt="調味料をフライパンに振るリアちゃん" width="1230" height="1278">${seasoningMarkup()}</div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }
 function resultView(result) {
-  return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-title-rule" aria-hidden="true"></div>
+  return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1>
     <div class="dish-frame"><div class="dish-photo"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div>
     <section class="result-section result-ingredients"><h2>主成分</h2><p>${escapeHtml(result.ingredients)}</p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
@@ -375,24 +375,25 @@ async function drawCard(result) {
     drawGingham(ctx, background, 1444, 56);
     drawContained(ctx, title, 380, 64, 440, 110);
     ctx.textAlign = "center";
-    roundedRect(ctx, 118, 180, 964, 172, 12, "#fff", "#082856", 3);
-    roundedRect(ctx, 127, 188, 946, 156, 8, null, "#f2c1c9", 2);
     const nameParts = resultNameParts(result);
-    ctx.fillStyle = "#082856";
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 5;
     ctx.font = '900 76px "Meiryo", sans-serif';
     nameParts.forEach((line, index) => {
       const y = 254 + index * 80;
+      const markerWidth = Math.min(940, ctx.measureText(line).width + 28);
+      ctx.strokeStyle = "#ffe16b";
+      ctx.lineWidth = 29;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(600 - markerWidth / 2, y - 10);
+      ctx.lineTo(600 + markerWidth / 2, y - 10);
+      ctx.stroke();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 5;
       ctx.strokeText(line, 600, y);
+      ctx.fillStyle = "#082856";
       ctx.fillText(line, 600, y);
     });
-    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(465, 344); ctx.lineTo(735, 344); ctx.stroke();
-    for (const x of [151, 1049]) {
-      ctx.beginPath(); ctx.arc(x, 262, 7, 0, Math.PI * 2);
-      ctx.fillStyle = "#ec183d"; ctx.fill();
-    }
+    ctx.lineCap = "butt";
 
     roundedRect(ctx, 42, 363, 1116, 535, 14, "#082856", "#183d70", 4);
     // Keep the transparent food artwork on a white Polaroid with a wider lower edge.
@@ -457,7 +458,7 @@ async function drawCard(result) {
     flavor.lines.forEach((line, index) => ctx.fillText(line, 805, 1218 + index * flavor.lineHeight));
     ctx.textAlign = "right";
     ctx.font = '800 36px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText(HASHTAG, 1148, 1412);
+    ctx.fillText(HASHTAG, 1148, 1392);
     canvas.setAttribute("aria-busy", "false");
     cardReady = true;
     document.querySelector('[data-action="save"]').disabled = false;
