@@ -168,8 +168,12 @@ body.home-mode { background-color: #fff9f7; }
 .result-intro { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 6px auto 0; }
 .result-intro img { width: 84px; height: 84px; object-fit: contain; flex: none; }
 .eyebrow { margin: 0; color: var(--red); font-size: .94rem; font-weight: 800; }
-.result-title { width: fit-content; max-width: 100%; margin: 2px auto 8px; padding: 0 6px 2px; color: var(--navy); font-family: "Meiryo", "Yu Gothic", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.32; text-align: center; word-break: keep-all; overflow-wrap: normal; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; }
-.result-title span { display: block; width: fit-content; margin: auto; background: linear-gradient(transparent 62%, #ffe16b 62% 91%, transparent 91%); }
+.result-title { width: fit-content; max-width: 100%; margin: 2px auto 8px; padding: 0 6px 2px; color: var(--navy); font-family: "Meiryo", "Yu Gothic", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.4; text-align: center; word-break: keep-all; overflow-wrap: normal; }
+.result-title-line { position: relative; display: block; width: fit-content; margin: auto; white-space: nowrap; background: linear-gradient(transparent 62%, #ffe16b 62% 91%, transparent 91%); }
+.result-title-line::before, .result-title-line::after { content: attr(data-text); position: absolute; inset: 0; white-space: nowrap; pointer-events: none; }
+.result-title-line::before { z-index: 0; color: var(--navy); -webkit-text-stroke: 11px var(--navy); }
+.result-title-line::after { z-index: 1; color: #fff; -webkit-text-stroke: 8px #fff; }
+.result-title-face { position: relative; z-index: 2; color: var(--navy); }
 .dish-frame { width: min(100%, 520px); margin: 0 auto; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy); }
 .dish-photo { padding: 11px 11px 24px; border: 1px solid #d5dee9; background: #fff; }
 .dish-art { display: grid; place-items: center; width: 100%; aspect-ratio: 1402 / 1122; }

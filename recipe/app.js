@@ -113,7 +113,10 @@ function resultNameParts(result) {
   return [chars.slice(0, index).join(""), chars.slice(index).join("")];
 }
 function resultNameMarkup(result) {
-  return resultNameParts(result).map((part) => `<span>${escapeHtml(part)}</span>`).join("");
+  return resultNameParts(result).map((part) => {
+    const text = escapeHtml(part);
+    return `<span class="result-title-line" data-text="${text}"><span class="result-title-face">${text}</span></span>`;
+  }).join("");
 }
 function shell(body, back = "", variant = "") {
   return `<section class="paper${variant ? ` ${variant}` : ""}"><div class="topline"><span class="brand">Clear シェアラボ</span>${back ? `<button class="back" data-action="back" data-target="${back}">← 戻る</button>` : ""}</div>${body}</section>`;
@@ -389,8 +392,12 @@ async function drawCard(result) {
       ctx.moveTo(600 - markerWidth / 2, y - 10);
       ctx.lineTo(600 + markerWidth / 2, y - 10);
       ctx.stroke();
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#082856";
+      ctx.lineWidth = 23;
+      ctx.strokeText(line, 600, y);
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 5;
+      ctx.lineWidth = 17;
       ctx.strokeText(line, 600, y);
       ctx.fillStyle = "#082856";
       ctx.fillText(line, 600, y);
