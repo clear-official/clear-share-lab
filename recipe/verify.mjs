@@ -152,7 +152,8 @@ for (const [type, choices] of examples) {
   await site.click("start");
   for (let index = 0; index < 7; index += 1) {
     assert.equal(site.location.hash, `#q-${index + 1}`);
-    assert.ok(site.app.innerHTML.includes(data.questions[index].text));
+    const displayedQuestion = site.app.innerHTML.match(/<h1 class="question-text">([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]*>/g, "");
+    assert.equal(displayedQuestion, data.questions[index].text, "改行しても設問の文言を保つ");
     assert.doesNotMatch(site.app.innerHTML, /data-action="next"/);
     assert.match(site.app.innerHTML, /class="kitchen-props"/);
     assert.match(site.app.innerHTML, /class="cooking-utensil"/);
@@ -203,7 +204,8 @@ for (const type of types) {
 }
 for (let index = 1; index <= 7; index += 1) {
   const preview = makeApp(`file:///recipe/index.html?preview=q-${index}`);
-  assert.ok(preview.app.innerHTML.includes(data.questions[index - 1].text));
+  const displayedQuestion = preview.app.innerHTML.match(/<h1 class="question-text">([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]*>/g, "");
+  assert.equal(displayedQuestion, data.questions[index - 1].text);
 }
 const publicSite = makeApp("https://clear-official.github.io/clear-share-lab/recipe/?preview=result-A");
 assert.match(publicSite.app.innerHTML, /data-action="start"/);

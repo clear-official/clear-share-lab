@@ -167,6 +167,7 @@ function homeView() {
       <svg class="utensil spoon" viewBox="0 0 28 45" aria-hidden="true"><path fill="currentColor" d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg>
     </div><div class="dotted" aria-hidden="true"></div></div>
     <h1 class="home-logo"><img src="${TITLE_IMAGE}" alt="私の隠しレシピ診断" width="800" height="202" fetchpriority="high"></h1>
+    <p class="home-count">－全7問－</p>
     <div class="kitchen-scene">
       <img class="hero-chef" src="${CHEF_IMAGE}" alt="フライパンを持ったシェフのリアちゃん" width="1572" height="2043">
       ${kitchenPropsMarkup()}
@@ -179,8 +180,9 @@ function quizView(index) {
   const question = CONTENT.questions[index];
   const progress = Array.from({ length: 7 }, (_, i) => `<li class="${i === index ? "current" : i < index ? "done" : ""}" aria-label="${i + 1}問目"></li>`).join("");
   const answers = question.answers.map((answer, choice) => `<button class="answer" data-action="answer" data-choice="${choice}" aria-pressed="${state.answers[index] === choice}"><span class="answer-number">${["①", "②", "③", "④"][choice]}</span><span>${escapeHtml(answer.text)}</span></button>`).join("");
+  const questionLines = question.text.match(/[^。]+。|[^。]+$/gu) || [question.text];
   return shell(`<header class="quiz-head">${titleMarkup(true)}<p class="quiz-progress-text">${index + 1}/7</p><ol class="progress-dots" aria-label="全7問の進捗">${progress}</ol></header>
-    <div class="question-box"><p class="question-number">第${index + 1}問</p><h1 class="question-text">${escapeHtml(question.text)}</h1></div>
+    <div class="question-box"><p class="question-number">第${index + 1}問</p><h1 class="question-text">${questionLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</h1></div>
     <div class="answers" role="group" aria-label="回答を選択">${answers}</div>
     <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${QUIZ_CHEF_IMAGE}" alt="調味料をフライパンに振るリアちゃん" width="1230" height="1278">${seasoningMarkup()}</div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }
@@ -377,18 +379,24 @@ async function drawCard(result) {
     for (let x = 420; x <= 780; x += 24) {
       ctx.beginPath(); ctx.arc(x, 130, 3, 0, Math.PI * 2); ctx.fill();
     }
+    roundedRect(ctx, 104, 149, 992, 221, 12, "#fff", "#082856", 3);
+    roundedRect(ctx, 113, 158, 974, 203, 8, null, "#f2c1c9", 2);
     const nameParts = resultNameParts(result);
     ctx.fillStyle = "#082856";
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 5;
-    ctx.font = '900 102px "Meiryo", sans-serif';
+    ctx.font = '900 90px "Meiryo", sans-serif';
     nameParts.forEach((line, index) => {
-      const y = 238 + index * 104;
+      const y = 245 + index * 97;
       ctx.strokeText(line, 600, y);
       ctx.fillText(line, 600, y);
     });
-    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(460, 355); ctx.lineTo(740, 355); ctx.stroke();
+    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(460, 354); ctx.lineTo(740, 354); ctx.stroke();
+    for (const x of [140, 1060]) {
+      ctx.beginPath(); ctx.arc(x, 258, 8, 0, Math.PI * 2);
+      ctx.fillStyle = "#ec183d"; ctx.fill();
+    }
 
     roundedRect(ctx, 42, 378, 1116, 617, 14, "#082856", "#183d70", 4);
     // Keep the transparent food artwork on a white Polaroid with a wider lower edge.
@@ -410,36 +418,43 @@ async function drawCard(result) {
     drawCenteredLines(ctx, sealBottom, 1015, 486);
 
     roundedRect(ctx, 42, 1013, 1116, 174, 10, "#fff", "#183d70", 2);
-    roundedRect(ctx, 72, 1002, 120, 43, 3, "#fff", "#183d70", 2);
-    ctx.fillStyle = "#ec183d";
+    roundedRect(ctx, 51, 1021, 1098, 157, 7, null, "#dce6f0", 2);
+    roundedRect(ctx, 72, 1002, 120, 43, 20, "#ec183d", "#ec183d", 2);
+    ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("総評", 89, 1033);
+    ctx.fillStyle = "#ec183d";
+    for (const x of [880, 898, 916]) {
+      ctx.beginPath(); ctx.arc(x, 1030, 4, 0, Math.PI * 2); ctx.fill();
+    }
     const summaryText = result.type === "A" ? result.description.replace("動きながら「", "動きながら\n「") : result.description;
     const description = fitLines(ctx, summaryText, 840, 105, 36, 29, 700, 1.34);
     ctx.fillStyle = "#082856";
     description.lines.forEach((line, index) => ctx.fillText(line, 85, 1098 + index * description.lineHeight));
     drawContained(ctx, chef, 957, 1027, 169, 151);
 
-    ctx.strokeStyle = "#183d70"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(42, 1202); ctx.lineTo(753, 1202); ctx.stroke();
-    roundedRect(ctx, 52, 1207, 145, 39, 3, "#ffe8eb", "#ec9da8", 2);
+    roundedRect(ctx, 42, 1203, 711, 89, 8, "#fffdfb", "#8ba0b8", 2);
     ctx.fillStyle = "#ec183d";
+    ctx.fillRect(42, 1212, 5, 71);
+    roundedRect(ctx, 54, 1210, 145, 39, 19, "#ec183d", "#ec183d", 2);
+    ctx.fillStyle = "#fff";
     ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("主成分", 65, 1236);
+    ctx.fillText("主成分", 68, 1238);
     const ingredients = fitLines(ctx, result.ingredients, 700, 42, 31, 26, 700, 1.2);
     ctx.fillStyle = "#082856";
-    ingredients.lines.forEach((line, index) => ctx.fillText(line, 52, 1277 + index * ingredients.lineHeight));
-    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 2; ctx.setLineDash([4, 7]);
-    ctx.beginPath(); ctx.moveTo(42, 1295); ctx.lineTo(753, 1295); ctx.stroke(); ctx.setLineDash([]);
-    roundedRect(ctx, 52, 1303, 248, 38, 3, "#fff0f1", "#ec9da8", 2);
+    ingredients.lines.forEach((line, index) => ctx.fillText(line, 56, 1285 + index * ingredients.lineHeight));
+    ctx.strokeStyle = "#ec183d"; ctx.lineWidth = 2; ctx.setLineDash([5, 7]);
+    roundedRect(ctx, 42, 1302, 711, 123, 8, "#fffafb", "#ec9da8", 2);
+    ctx.setLineDash([]);
+    roundedRect(ctx, 54, 1308, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";
     ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("おいしくなるコツ", 65, 1330);
+    ctx.fillText("おいしくなるコツ", 68, 1336);
     const tipText = result.tip.replace("、", "、\n");
-    const tip = fitLines(ctx, tipText, 700, 70, 32, 28, 700, 1.08);
+    const tip = fitLines(ctx, tipText, 700, 70, 30, 28, 700, 1.08);
     ctx.fillStyle = "#082856";
-    tip.lines.forEach((line, index) => ctx.fillText(line, 52, 1373 + index * tip.lineHeight));
+    tip.lines.forEach((line, index) => ctx.fillText(line, 56, 1387 + index * tip.lineHeight));
 
     roundedRect(ctx, 779, 1203, 379, 215, 5, "#fff1ba", null);
     ctx.fillStyle = "#fffefa";
