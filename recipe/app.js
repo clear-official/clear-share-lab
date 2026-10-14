@@ -187,8 +187,8 @@ function quizView(index) {
     <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${QUIZ_CHEF_IMAGE}" alt="調味料をフライパンに振るリアちゃん" width="1230" height="1278">${seasoningMarkup()}</div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }
 function resultView(result) {
-  return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1>
-    <div class="dish-frame"><div class="dish-photo"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div>
+  return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
+    <div class="dish-frame"><div class="dish-photo"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="dish-art"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
     <section class="result-section result-ingredients"><h2>主成分</h2><p>${escapeHtml(result.ingredients)}</p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
@@ -374,11 +374,13 @@ async function drawCard(result) {
     drawGingham(ctx, background, 0, 56);
     drawGingham(ctx, background, 1444, 56);
     drawContained(ctx, title, 380, 64, 440, 110);
+    roundedRect(ctx, 42, 183, 1116, 715, 14, "#082856", "#183d70", 4);
+    roundedRect(ctx, 76, 197, 1048, 686, 3, "#fff", "#d5dfe9", 2);
     ctx.textAlign = "center";
     const nameParts = resultNameParts(result);
     ctx.font = '900 76px "Meiryo", sans-serif';
     nameParts.forEach((line, index) => {
-      const y = 254 + index * 80;
+      const y = 270 + index * 80;
       const markerWidth = Math.min(940, ctx.measureText(line).width + 28);
       ctx.strokeStyle = "#ffe16b";
       ctx.lineWidth = 29;
@@ -395,24 +397,20 @@ async function drawCard(result) {
     });
     ctx.lineCap = "butt";
 
-    roundedRect(ctx, 42, 363, 1116, 535, 14, "#082856", "#183d70", 4);
     // Keep the transparent food artwork on a white Polaroid with a wider lower edge.
-    roundedRect(ctx, 76, 377, 1048, 506, 3, "#fff", "#d5dfe9", 2);
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(95, 390, 1010, 475);
-    drawContained(ctx, image, 113, 390, 974, 475);
+    drawContained(ctx, image, 113, 380, 974, 470);
 
     // The result-specific seal sits on the upper-right edge of the photo.
-    ctx.beginPath(); ctx.arc(1015, 467, 99, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(1015, 470, 99, 0, Math.PI * 2);
     ctx.fillStyle = "#fff"; ctx.fill();
     ctx.strokeStyle = "#183d70"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath(); ctx.arc(1015, 467, 90, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(1015, 470, 90, 0, Math.PI * 2);
     ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
     const sealTop = fitLines(ctx, result.sealTop, 160, 53, 22, 18, 800, 1.15);
     const sealBottom = fitLines(ctx, result.sealBottom, 164, 65, 25, 19, 800, 1.13);
     ctx.fillStyle = "#082856";
-    drawCenteredLines(ctx, sealTop, 1015, 449);
-    drawCenteredLines(ctx, sealBottom, 1015, 490);
+    drawCenteredLines(ctx, sealTop, 1015, 452);
+    drawCenteredLines(ctx, sealBottom, 1015, 493);
 
     roundedRect(ctx, 42, 916, 1116, 203, 10, "#fff", "#183d70", 2);
     roundedRect(ctx, 51, 924, 1098, 187, 7, null, "#dce6f0", 2);

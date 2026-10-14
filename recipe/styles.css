@@ -168,11 +168,12 @@ body.home-mode { background-color: #fff9f7; }
 .result-intro { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 6px auto 0; }
 .result-intro img { width: 84px; height: 84px; object-fit: contain; flex: none; }
 .eyebrow { margin: 0; color: var(--red); font-size: .94rem; font-weight: 800; }
-.result-title { width: fit-content; max-width: 100%; margin: 8px auto 18px; padding: 0 6px 2px; color: var(--navy); font-family: "Meiryo", "Yu Gothic", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.32; text-align: center; word-break: keep-all; overflow-wrap: normal; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; }
+.result-title { width: fit-content; max-width: 100%; margin: 2px auto 8px; padding: 0 6px 2px; color: var(--navy); font-family: "Meiryo", "Yu Gothic", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.32; text-align: center; word-break: keep-all; overflow-wrap: normal; -webkit-text-stroke: 2px #fff; paint-order: stroke fill; }
 .result-title span { display: block; width: fit-content; margin: auto; background: linear-gradient(transparent 62%, #ffe16b 62% 91%, transparent 91%); }
 .dish-frame { width: min(100%, 520px); margin: 0 auto; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy); }
 .dish-photo { padding: 11px 11px 24px; border: 1px solid #d5dee9; background: #fff; }
-.dish-photo img { width: 100%; height: auto; aspect-ratio: 1402 / 1122; object-fit: contain; }
+.dish-art { display: grid; place-items: center; width: 100%; aspect-ratio: 1402 / 1122; }
+.dish-art img { width: 100%; height: 100%; object-fit: contain; }
 .result-section { margin: 20px 0 0; }
 .result-section h2 { margin: 0 0 8px; color: var(--red); font-size: .93rem; font-weight: 900; letter-spacing: .03em; }
 .result-section p { margin: 0; font-size: 1.02rem; line-height: 1.78; white-space: pre-line; overflow-wrap: anywhere; }
@@ -222,7 +223,7 @@ body.home-mode { background-color: #fff9f7; }
   .kitchen-scene { height: clamp(205px, 59vw, 315px); }
 }
 @media (max-width: 430px) {
-  .quiz-paper { min-height: calc(100svh - 31px); padding: 9px 12px 10px; }
+  .quiz-paper { display: flex; flex-direction: column; min-height: calc(100svh - 31px); padding: 9px 12px 10px; }
   .quiz-paper .topline { min-height: 30px; margin-bottom: 5px; }
   .quiz-paper .back { min-height: 30px; padding: 2px 11px; font-size: .82rem; }
   .quiz-head { margin-bottom: 6px; }
@@ -235,7 +236,7 @@ body.home-mode { background-color: #fff9f7; }
   .quiz-paper .question-text span + span { margin-top: .12em; }
   .quiz-paper .answers { gap: 6px; margin-top: 8px; }
   .quiz-paper .answer { min-height: 46px; padding: 6px 9px; font-size: clamp(.86rem, 3.8vw, .98rem); line-height: 1.3; }
-  .quiz-paper .cooking-footer { width: min(100%, 205px); margin-top: 6px; }
+  .quiz-paper .cooking-footer { width: min(100%, 205px); margin-top: auto; }
   .quiz-paper .cooking-label { margin-bottom: 2px; font-size: .7rem; }
   .quiz-paper .cooking-scene { height: 145px; }
   .quiz-paper .chef-cooking { bottom: 0; width: min(65%, 130px); }
