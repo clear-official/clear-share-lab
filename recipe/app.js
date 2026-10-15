@@ -15,6 +15,7 @@ let navigationLocked = false;
 let answerAdvanceTimer = null;
 let cardReady = false;
 let cardOpenUrl = null;
+let cardPngBlob = null;
 let toastTimer;
 
 function validContent() {
@@ -191,8 +192,8 @@ function quizView(index) {
 }
 function resultView(result) {
   return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
-    <div class="dish-frame"><div class="dish-photo"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="dish-art"><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
-    <section class="result-section result-ingredients"><h2>主成分</h2><p>${escapeHtml(result.ingredients)}<span class="ingredient-stamp" aria-hidden="true"></span></p></section>
+    <div class="dish-frame"><div class="dish-photo"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
+    <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${escapeHtml(result.ingredients)}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
     <section class="result-section result-flavor"><h2>隠し味</h2><p>${escapeHtml(result.hiddenFlavor)}</p></section>
@@ -208,8 +209,9 @@ function shareView(result) {
   return shell(`<h1 class="share-heading">レシピカードをシェアしよう</h1>
     <canvas id="recipe-card" class="card-preview" width="1200" height="1500" role="img" aria-label="${escapeHtml(result.name)}のシェア用レシピカード" aria-busy="true"></canvas>
     <div class="share-actions"><button class="primary" data-action="share-file" disabled>画像付きで共有する</button>
-      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>カード画像を保存</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><a class="share-fallback-link" id="open-card" href="#" target="_blank" rel="noopener" hidden>保存できない場合はこちら</a></div></div>
-    <p class="share-note">保存ボタンが使えない端末では、画像を開いて長押しで保存してください。共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
+      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>カード画像を保存</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><button class="share-fallback-link" data-action="save-preview" disabled>保存できない場合はこちら</button></div></div>
+    <div class="save-preview" id="save-preview" hidden><p>画像を長押しして保存してください。閉じるとシェア画面に戻ります。</p><img id="save-preview-image" alt="保存用レシピカード"><button class="secondary" data-action="close-save-preview">画像を閉じる</button></div>
+    <p class="share-note">共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
     <details class="share-social"><summary>SNSを選んでシェア</summary><div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
       <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p></details>
     <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-cover.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="330" height="140"></h2><ol>
@@ -233,6 +235,8 @@ function render() {
   }
   if (!page.preview && (page.screen === "result" || page.screen === "share") && (!allAnswered() || !currentResult())) { navigate("home", true); return; }
   if (cardOpenUrl) { URL.revokeObjectURL(cardOpenUrl); cardOpenUrl = null; }
+  cardPngBlob = null;
+  cardReady = false;
   const result = page.screen === "result" || page.screen === "share" ? displayedResult(page) : null;
   app.innerHTML = page.screen === "home" ? homeView()
     : page.screen === "quiz" ? quizView(page.index)
@@ -298,6 +302,8 @@ app.addEventListener("click", async (event) => {
   }
   if (action === "restart") { state = emptyState(); saveState(); navigate("home"); return; }
   if (action === "save") { await saveCard(); return; }
+  if (action === "save-preview") { showSavePreview(); return; }
+  if (action === "close-save-preview") { document.querySelector("#save-preview").hidden = true; return; }
   if (action === "share-file") { await shareCard(); return; }
   if (action === "copy") { await copyText(shareText(displayedResult(page))); }
 });
@@ -335,6 +341,53 @@ function drawContained(ctx, image, x, y, width, height) {
   const drawWidth = image.naturalWidth * scale;
   const drawHeight = image.naturalHeight * scale;
   ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+}
+function drawDishTable(ctx, x, y, width, height) {
+  const edge = 12;
+  const clothX = x + edge, clothY = y + edge;
+  const clothWidth = width - edge * 2, clothHeight = height - edge * 2;
+  ctx.save();
+  ctx.fillStyle = "#f1dfc6";
+  ctx.fillRect(x, y, width, height);
+  ctx.strokeStyle = "#d7bd9a";
+  ctx.lineWidth = 1.5;
+  for (const offset of [4, 9]) {
+    ctx.beginPath();
+    ctx.moveTo(x + 3, y + offset);
+    ctx.lineTo(x + width - 3, y + offset + 1);
+    ctx.moveTo(x + 3, y + height - offset);
+    ctx.lineTo(x + width - 3, y + height - offset + 1);
+    ctx.stroke();
+  }
+  ctx.shadowColor = "rgba(55, 38, 30, .18)";
+  ctx.shadowBlur = 9;
+  ctx.shadowOffsetY = 4;
+  ctx.fillStyle = "#fffdfb";
+  ctx.fillRect(clothX, clothY, clothWidth, clothHeight);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(clothX, clothY, clothWidth, clothHeight);
+  ctx.clip();
+  ctx.fillStyle = "rgba(218, 76, 86, .13)";
+  for (let stripeX = clothX; stripeX < clothX + clothWidth; stripeX += 50) ctx.fillRect(stripeX, clothY, 25, clothHeight);
+  for (let stripeY = clothY; stripeY < clothY + clothHeight; stripeY += 50) ctx.fillRect(clothX, stripeY, clothWidth, 25);
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = "rgba(173, 81, 85, .27)";
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([6, 7]);
+  ctx.strokeRect(clothX + 6, clothY + 6, clothWidth - 12, clothHeight - 12);
+  ctx.setLineDash([]);
+  ctx.strokeStyle = "rgba(137, 83, 75, .13)";
+  ctx.beginPath();
+  ctx.moveTo(clothX + clothWidth - 63, clothY + 1);
+  ctx.lineTo(clothX + clothWidth - 28, clothY + 15);
+  ctx.moveTo(clothX + 25, clothY + clothHeight - 17);
+  ctx.lineTo(clothX + 60, clothY + clothHeight - 2);
+  ctx.stroke();
+  ctx.restore();
 }
 function wrapLines(ctx, text, maxWidth) {
   const paragraphs = String(text).split("\n");
@@ -405,20 +458,47 @@ async function drawCard(result) {
     });
     ctx.lineCap = "butt";
 
-    // Keep the transparent food artwork on a white Polaroid with a wider lower edge.
+    // Keep the cloth and dish inside the Polaroid's white border.
+    drawDishTable(ctx, 113, 400, 974, 450);
+    ctx.save();
+    ctx.shadowColor = "rgba(45, 34, 37, .2)";
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 9;
     drawContained(ctx, image, 113, 380, 974, 470);
+    ctx.restore();
 
-    // The result-specific seal sits on the upper-right edge of the photo.
-    ctx.beginPath(); ctx.arc(1015, 470, 99, 0, Math.PI * 2);
+    // Place the larger seal in the photo's upper-right opening.
+    ctx.beginPath(); ctx.arc(1015, 337, 133, 0, Math.PI * 2);
     ctx.fillStyle = "#fff"; ctx.fill();
     ctx.strokeStyle = "#183d70"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath(); ctx.arc(1015, 470, 90, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(1015, 337, 123, 0, Math.PI * 2);
     ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
-    const sealTop = fitLines(ctx, result.sealTop, 160, 53, 22, 18, 800, 1.15);
-    const sealBottom = fitLines(ctx, result.sealBottom, 164, 65, 25, 19, 800, 1.13);
+    const sealTop = { lines: result.sealTop.replace(/まで$/, "\nまで").split("\n"), lineHeight: 37 };
+    const sealBottomLines = {
+      A: ["思いついたら", "すぐ"],
+      B: ["気になったら", "あっという間"],
+      C: ["変化に気づいた", "そのとき"],
+      D: ["段取りが", "整ってから"],
+      E: ["予定が変わった", "その場で"],
+      F: ["コトコト、", "じっくり"],
+    }[result.type];
+    if (!sealBottomLines || sealBottomLines.join("") !== result.sealBottom) throw new Error("丸い欄の文言を確認してください");
+    const sealBottom = { lines: sealBottomLines, lineHeight: 37 };
     ctx.fillStyle = "#082856";
-    drawCenteredLines(ctx, sealTop, 1015, 452);
-    drawCenteredLines(ctx, sealBottom, 1015, 493);
+    ctx.font = '800 32px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
+    drawCenteredLines(ctx, sealTop, 1015, 270);
+    ctx.beginPath();
+    for (let x = 940; x <= 1090; x += 4) {
+      const y = 329 + Math.sin((x - 940) * Math.PI / 12) * 2.5;
+      if (x === 940) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = "#849bbb";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    const sealBottomSize = Math.max(...sealBottom.lines.map((line) => Array.from(line).length)) >= 7 ? 28 : 30;
+    ctx.font = `800 ${sealBottomSize}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+    drawCenteredLines(ctx, sealBottom, 1015, 376);
 
     roundedRect(ctx, 42, 916, 1116, 203, 10, "#fff", "#183d70", 2);
     roundedRect(ctx, 51, 924, 1098, 187, 7, null, "#dce6f0", 2);
@@ -427,11 +507,20 @@ async function drawCard(result) {
     ctx.textAlign = "left";
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("総評", 89, 936);
-    const summaryText = result.type === "A" ? result.description.replace("動きながら「", "動きながら\n「") : result.description;
-    const description = fitLines(ctx, summaryText, 820, 144, 39, 31, 700, 1.34);
+    const summaryLines = {
+      A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
+      B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
+      C: ["相手の希望や困ることに目が向く人。", "みんなが心地よく過ごせる形を探せます。"],
+      D: ["時間や条件を確かめて、次に必要なことを", "考えられる人。準備が整うほど力を発揮します。"],
+      E: ["予定どおりにいかなくても、手元に", "あるものから別の道を見つけられる人です。"],
+      F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
+    }[result.type];
+    if (!summaryLines || summaryLines.join("") !== result.description) throw new Error("総評の改行位置を確認してください");
+    const description = fitLines(ctx, summaryLines.join("\n"), 865, 144, 39, 39, 700, 1.34);
+    if (description.lines.length !== 2) throw new Error("総評が2行に収まりません");
     ctx.fillStyle = "#082856";
-    description.lines.forEach((line, index) => ctx.fillText(line, 105, 1005 + index * description.lineHeight));
-    drawContained(ctx, chef, 957, 943, 169, 160);
+    description.lines.forEach((line, index) => ctx.fillText(line, 80, 1005 + index * description.lineHeight));
+    drawContained(ctx, chef, 931, 869, 254, 250);
 
     roundedRect(ctx, 42, 1137, 711, 112, 8, "#fffdfb", "#8ba0b8", 2);
     ctx.fillStyle = "#ec183d";
@@ -459,51 +548,80 @@ async function drawCard(result) {
     ctx.fillStyle = "#ec183d";
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("隠し味", 805, 1175);
-    const flavor = fitLines(ctx, result.hiddenFlavor, 325, 85, 29, 23, 700, 1.2);
+    const flavorText = ({
+      "気になることを掘り下げる好奇心": "気になることを\n掘り下げる好奇心",
+      "相手の希望に目を向ける気づかい": "相手の希望に\n目を向ける気づかい",
+      "条件を確かめて整える視点": "条件を確かめて\n整える視点",
+      "別の方法を見つける柔軟さ": "別の方法を\n見つける柔軟さ",
+      "自分のペースで続ける粘り強さ": "自分のペースで\n続ける粘り強さ",
+    })[result.hiddenFlavor] || result.hiddenFlavor;
+    const flavor = fitLines(ctx, flavorText, 325, 85, 29, 23, 700, 1.2);
+    ctx.save();
     ctx.fillStyle = "#082856";
-    flavor.lines.forEach((line, index) => ctx.fillText(line, 805, 1218 + index * flavor.lineHeight));
+    ctx.font = `700 ${flavor.size}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    flavor.lines.forEach((line, index) => ctx.fillText(line, 968.5, 1233 + (index - (flavor.lines.length - 1) / 2) * flavor.lineHeight));
+    ctx.restore();
+    ctx.fillStyle = "#082856";
     ctx.textAlign = "right";
     ctx.font = '800 36px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText(HASHTAG, 1148, 1392);
-    canvas.setAttribute("aria-busy", "false");
-    cardReady = true;
-    document.querySelector('[data-action="save"]').disabled = false;
-    document.querySelector('[data-action="share-file"]').disabled = false;
     canvas.toBlob((blob) => {
       if (!blob || !canvas.isConnected) return;
+      cardPngBlob = blob;
       cardOpenUrl = URL.createObjectURL(blob);
-      const link = document.querySelector("#open-card");
-      if (link) { link.href = cardOpenUrl; link.hidden = false; }
+      const image = document.querySelector("#save-preview-image");
+      if (image) image.src = cardOpenUrl;
+      cardReady = true;
+      canvas.setAttribute("aria-busy", "false");
+      document.querySelector('[data-action="save"]').disabled = false;
+      document.querySelector('[data-action="share-file"]').disabled = false;
+      document.querySelector('[data-action="save-preview"]').disabled = false;
     }, "image/png");
   } catch (error) {
     console.error(error);
     showToast("カード画像を作成できませんでした");
   }
 }
-function cardBlob() {
-  const canvas = document.querySelector("#recipe-card");
-  if (!cardReady || !canvas) return Promise.reject(new Error("カードの準備ができていません"));
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("PNGを作成できません")), "image/png"));
+function showSavePreview() {
+  if (!cardReady || !cardOpenUrl) return;
+  const preview = document.querySelector("#save-preview");
+  preview.hidden = false;
+  preview.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 async function saveCard() {
   try {
-    const blob = await cardBlob();
-    const url = URL.createObjectURL(blob);
+    if (!cardReady || !cardPngBlob) throw new Error("カードの準備ができていません");
+    const file = new File([cardPngBlob], `clear-recipe-${displayedResult().id}.png`, { type: "image/png" });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ title: "私の隠しレシピ診断", files: [file] });
+        return;
+      } catch (error) {
+        if (error.name === "AbortError") return;
+        console.error(error);
+      }
+    }
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+      showSavePreview();
+      showToast("画像を長押しして保存してください");
+      return;
+    }
     const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `clear-recipe-${displayedResult().id}.png`;
+    anchor.href = cardOpenUrl;
+    anchor.download = file.name;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 30000);
     showToast("カード画像を保存します");
   } catch (error) { console.error(error); showToast("画像を保存できませんでした"); }
 }
 async function shareCard() {
   try {
-    const blob = await cardBlob();
+    if (!cardReady || !cardPngBlob) throw new Error("カードの準備ができていません");
     const result = displayedResult();
-    const file = new File([blob], `clear-recipe-${result.id}.png`, { type: "image/png" });
+    const file = new File([cardPngBlob], `clear-recipe-${result.id}.png`, { type: "image/png" });
     if (!navigator.canShare?.({ files: [file] })) {
       showToast("カードを保存し、SNSで画像を添付してください"); return;
     }

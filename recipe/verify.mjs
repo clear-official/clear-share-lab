@@ -59,7 +59,7 @@ assert.equal(examples.size, 6, "6結果すべてに到達できる");
 assert.ok(tieCases.normalized > 0);
 assert.ok(tieCases.latest > 0);
 
-function makeApp(urlText, { withCanvas = false } = {}) {
+function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent = "" } = {}) {
   const answerButtons = Array.from({ length: 4 }, (_, choice) => ({
     dataset: { action: "answer", choice: String(choice) },
     attributes: {},
@@ -73,10 +73,10 @@ function makeApp(urlText, { withCanvas = false } = {}) {
   const drawnText = [];
   const drawing = {
     font: "16px sans-serif",
-    beginPath() {}, moveTo() {}, lineTo() {}, arcTo() {}, closePath() {},
-    fill() {}, stroke() {}, fillRect() {}, arc() {}, setLineDash() {}, strokeText() {}, drawImage() { this.imageCount += 1; },
+    beginPath() {}, moveTo() {}, lineTo() {}, arcTo() {}, closePath() {}, rect() {}, clip() {}, save() {}, restore() {},
+    fill() {}, stroke() {}, fillRect() {}, strokeRect() {}, arc() {}, setLineDash() {}, strokeText() {}, drawImage() { this.imageCount += 1; },
     imageCount: 0,
-    fillText(text, x, y) { drawnText.push({ text, x, y }); },
+    fillText(text, x, y) { drawnText.push({ text, x, y, fillStyle: this.fillStyle }); },
     measureText(text) {
       const size = Number(/(\d+)px/.exec(this.font)?.[1] || 16);
       return { width: Array.from(text).reduce((width, char) => width + (/[\u0020-\u007e]/.test(char) ? .58 : 1) * size, 0) };
@@ -84,7 +84,11 @@ function makeApp(urlText, { withCanvas = false } = {}) {
   };
   const saveButton = { disabled: true };
   const shareButton = { disabled: true };
-  const openCard = { hidden: true, href: "" };
+  const savePreviewButton = { disabled: true };
+  const savePreviewImage = { src: "" };
+  const savePreview = { hidden: true, scrollIntoView() {} };
+  const toast = { textContent: "", classList: { add() {}, remove() {} } };
+  let sharedData = null;
   const canvas = {
     isConnected: true,
     getContext() { return drawing; },
@@ -100,7 +104,10 @@ function makeApp(urlText, { withCanvas = false } = {}) {
         : withCanvas && selector === "#recipe-card" ? canvas
         : withCanvas && selector === '[data-action="save"]' ? saveButton
         : withCanvas && selector === '[data-action="share-file"]' ? shareButton
-        : withCanvas && selector === "#open-card" ? openCard
+        : withCanvas && selector === '[data-action="save-preview"]' ? savePreviewButton
+        : withCanvas && selector === "#save-preview-image" ? savePreviewImage
+        : withCanvas && selector === "#save-preview" ? savePreview
+        : selector === "#toast" ? toast
         : null;
     },
   };
@@ -126,7 +133,8 @@ function makeApp(urlText, { withCanvas = false } = {}) {
       getItem(key) { return storage.get(key) || null; },
       setItem(key, value) { storage.set(key, value); },
     },
-    URL, URLSearchParams, Blob, Image, console,
+    URL, URLSearchParams, Blob, File, Image, console,
+    navigator: { userAgent, canShare({ files }) { return canShareFiles && files.length === 1; }, async share(data) { sharedData = data; } },
     setTimeout(callback) { const id = ++nextTimer; timers.set(id, callback); return id; },
     clearTimeout(id) { timers.delete(id); },
   });
@@ -142,7 +150,7 @@ function makeApp(urlText, { withCanvas = false } = {}) {
     timers.delete(id);
     callback();
   }
-  return { app, location, document, click, advanceAnswer, answerButtons, window, drawing, drawnText, saveButton, shareButton };
+  return { app, location, document, click, advanceAnswer, answerButtons, window, drawing, drawnText, saveButton, shareButton, savePreviewButton, savePreview, get sharedData() { return sharedData; } };
 }
 
 for (const [type, choices] of examples) {
@@ -193,6 +201,19 @@ for (const type of types) {
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(card.saveButton.disabled, false, `保存ボタン: ${type}`);
   assert.equal(card.shareButton.disabled, false, `共有ボタン: ${type}`);
+  assert.equal(card.savePreviewButton.disabled, false, `長押し保存ボタン: ${type}`);
+  const shareLocation = card.location.href;
+  await card.click("save");
+  assert.equal(card.location.href, shareLocation, `保存で画面を移動しない: ${type}`);
+  assert.equal(card.sharedData.files[0].type, "image/png", `保存メニューにPNGを渡す: ${type}`);
+  const fallback = makeApp(`file:///recipe/index.html?preview=share-${type}`, { withCanvas: true, canShareFiles: false, userAgent: "iPhone" });
+  await new Promise((resolve) => setImmediate(resolve));
+  const fallbackLocation = fallback.location.href;
+  await fallback.click("save");
+  assert.equal(fallback.location.href, fallbackLocation, `iPhone代替保存で画面を移動しない: ${type}`);
+  assert.equal(fallback.savePreview.hidden, false, `iPhone代替保存で画像を表示: ${type}`);
+  await fallback.click("close-save-preview");
+  assert.equal(fallback.savePreview.hidden, true, `代替保存画像を閉じる: ${type}`);
   assert.equal(card.drawing.imageCount, 7, `料理画像・最新版リアちゃん・タイトル・背景: ${type}`);
   const text = card.drawnText.map((entry) => entry.text).join("");
   const result = data.results.find((entry) => entry.type === type);
@@ -200,7 +221,30 @@ for (const type of types) {
   for (const copy of [result.name, result.ingredients, result.description, result.tip, result.sealTop, result.sealBottom, flavor.hiddenFlavorText]) {
     assert.ok(text.includes(copy), `カードの文字: ${type} ${copy}`);
   }
+  const summaryBreaks = {
+    A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
+    B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
+    C: ["相手の希望や困ることに目が向く人。", "みんなが心地よく過ごせる形を探せます。"],
+    D: ["時間や条件を確かめて、次に必要なことを", "考えられる人。準備が整うほど力を発揮します。"],
+    E: ["予定どおりにいかなくても、手元に", "あるものから別の道を見つけられる人です。"],
+    F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
+  }[type];
+  const summaryLines = card.drawnText.filter(({ x, y }) => x === 80 && y >= 1000 && y <= 1090);
+  assert.deepEqual(summaryLines.map(({ text }) => text), summaryBreaks, `総評の2行と改行位置: ${type}`);
+  assert.ok(card.drawnText.some(({ text, x, y }) => text === "隠し味" && x === 805 && y === 1175), `隠し味の見出し位置: ${type}`);
+  const flavorLines = card.drawnText.filter(({ x, y }) => x === 968.5 && y >= 1200 && y <= 1302);
+  assert.equal(flavorLines.map(({ text }) => text).join(""), flavor.hiddenFlavorText, `隠し味の本文: ${type}`);
+  assert.equal(flavorLines.reduce((sum, { y }) => sum + y, 0) / flavorLines.length, 1233, `隠し味の縦中央: ${type}`);
+  assert.equal(card.drawnText.find(({ text }) => text === "#CLEARシェアラボ")?.fillStyle, "#082856", `ハッシュタグの色: ${type}`);
   assert.ok(card.drawnText.every(({ x, y }) => x >= 0 && x <= 1200 && y >= 0 && y <= 1500));
+}
+for (const flavorType of types) {
+  const resultType = flavorType === "A" ? "B" : "A";
+  const card = makeApp(`file:///recipe/index.html?preview=share-${resultType}&flavor=${flavorType}`, { withCanvas: true });
+  await new Promise((resolve) => setImmediate(resolve));
+  const flavorLines = card.drawnText.filter(({ x, y }) => x === 968.5 && y >= 1200 && y <= 1302);
+  assert.equal(flavorLines.map(({ text }) => text).join(""), data.results.find(({ type }) => type === flavorType).hiddenFlavorText, `隠し味6種類: ${flavorType}`);
+  assert.equal(flavorLines.reduce((sum, { y }) => sum + y, 0) / flavorLines.length, 1233, `隠し味6種類の縦中央: ${flavorType}`);
 }
 for (let index = 1; index <= 7; index += 1) {
   const preview = makeApp(`file:///recipe/index.html?preview=q-${index}`);
@@ -210,5 +254,7 @@ for (let index = 1; index <= 7; index += 1) {
 const publicSite = makeApp("https://clear-official.github.io/clear-share-lab/recipe/?preview=result-A");
 assert.match(publicSite.app.innerHTML, /data-action="start"/);
 assert.doesNotMatch(publicSite.app.innerHTML, /あなたの隠しレシピは/);
+const home = makeApp("file:///recipe/index.html?preview=home");
+assert.match(home.app.innerHTML, /class="home-count">－全7問－<\/p>/);
 
 console.log("OK: 16,384通りの判定、6結果の画面遷移とカード描画、7問と結果・カードのローカルプレビューを確認");
