@@ -114,10 +114,15 @@ function resultNameParts(result) {
   return [chars.slice(0, index).join(""), chars.slice(index).join("")];
 }
 function resultNameMarkup(result) {
-  return resultNameParts(result).map((part) => {
+  const lines = resultNameParts(result).map((part, index) => {
     const text = escapeHtml(part);
-    return `<span class="result-title-line" data-text="${text}"><span class="result-title-face">${text}</span></span>`;
+    const y = 53 + index * 65;
+    const markerWidth = Array.from(part).length * 48 + 28;
+    return `<line x1="${300 - markerWidth / 2}" y1="${y - 11}" x2="${300 + markerWidth / 2}" y2="${y - 11}" stroke="#ffe16b" stroke-width="18" stroke-linecap="round"/>
+      <text x="300" y="${y}" fill="#082856" stroke="#082856" stroke-width="17" stroke-linejoin="round" paint-order="stroke fill">${text}</text>
+      <text x="300" y="${y}" fill="#082856" stroke="#fff" stroke-width="11" stroke-linejoin="round" paint-order="stroke fill">${text}</text>`;
   }).join("");
+  return `<svg class="result-title-svg" viewBox="0 0 600 144" aria-hidden="true"><g text-anchor="middle" font-family="Recipe Maru, Hiragino Maru Gothic ProN, Meiryo, sans-serif" font-size="48" font-weight="900">${lines}</g></svg>`;
 }
 function sealBottomLines(result) {
   const lines = {
@@ -423,9 +428,48 @@ function fitLines(ctx, text, maxWidth, maxHeight, startSize, minSize, weight, li
   }
   throw new Error("カードの原稿が所定の領域に収まりません。配置を調整してください。");
 }
-function drawCenteredLines(ctx, layout, x, top) {
+function drawResultSeal(ctx, result) {
+  const x = 1015, y = 385, radius = 133;
+  const topLines = [result.sealTop.replace(/まで$/, ""), "まで"];
+  const bottomLines = sealBottomLines(result);
+  if (!result.sealTop.endsWith("まで")) throw new Error("丸い欄の文言を確認してください");
+  const fitSize = (lines, baselines, startSize) => {
+    for (let size = startSize; size >= 23; size--) {
+      ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
+      if (lines.every((line, index) => {
+        const baseline = baselines[index];
+        const edge = Math.max(Math.abs(baseline - size - y), Math.abs(baseline + size * .15 - y));
+        const halfWidth = Math.sqrt(radius * radius - edge * edge) - 18;
+        return ctx.measureText(line).width / 2 <= halfWidth;
+      })) return size;
+    }
+    throw new Error("丸い欄の文字が円内に収まりません");
+  };
+  const topBaselines = [331, 361];
+  const bottomBaselines = [416, 446];
+  const topSize = fitSize(topLines, topBaselines, 27);
+  const bottomSize = fitSize(bottomLines, bottomBaselines, 26);
+
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff"; ctx.fill();
+  ctx.strokeStyle = "#183d70"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, radius - 10, 0, Math.PI * 2);
+  ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = "#082856";
   ctx.textAlign = "center";
-  layout.lines.forEach((line, index) => ctx.fillText(line, x, top + index * layout.lineHeight));
+  ctx.font = `800 ${topSize}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
+  topLines.forEach((line, index) => ctx.fillText(line, x, topBaselines[index]));
+  ctx.beginPath();
+  for (let lineX = 940; lineX <= 1090; lineX += 4) {
+    const lineY = 385 + Math.sin((lineX - 940) * Math.PI / 12) * 2.5;
+    if (lineX === 940) ctx.moveTo(lineX, lineY);
+    else ctx.lineTo(lineX, lineY);
+  }
+  ctx.strokeStyle = "#849bbb"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.font = `800 ${bottomSize}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
+  bottomLines.forEach((line, index) => ctx.fillText(line, x, bottomBaselines[index]));
+  ctx.restore();
 }
 async function drawCard(result) {
   const canvas = document.querySelector("#recipe-card");
@@ -436,6 +480,7 @@ async function drawCard(result) {
       loadImage(result.image), loadImage(CHEF_IMAGE), loadImage(TITLE_IMAGE), loadImage(BACKGROUND_IMAGE),
     ]);
     if (!canvas.isConnected) return;
+    await document.fonts?.load('900 76px "Recipe Maru"', result.name);
     await document.fonts?.ready;
     if (!canvas.isConnected) return;
     const ctx = canvas.getContext("2d");
@@ -448,7 +493,7 @@ async function drawCard(result) {
     roundedRect(ctx, 76, 197, 1048, 917, 3, "#fff", "#d5dfe9", 2);
     ctx.textAlign = "center";
     const nameParts = resultNameParts(result);
-    ctx.font = '900 76px "Meiryo", sans-serif';
+    ctx.font = '900 76px "Recipe Maru", "Hiragino Maru Gothic ProN", "Meiryo", sans-serif';
     nameParts.forEach((line, index) => {
       const y = 292 + index * 80;
       const markerWidth = Math.min(940, ctx.measureText(line).width + 28);
@@ -461,10 +506,10 @@ async function drawCard(result) {
       ctx.stroke();
       ctx.lineJoin = "round";
       ctx.strokeStyle = "#082856";
-      ctx.lineWidth = 23;
+      ctx.lineWidth = 18;
       ctx.strokeText(line, 600, y);
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 17;
+      ctx.lineWidth = 13;
       ctx.strokeText(line, 600, y);
       ctx.fillStyle = "#082856";
       ctx.fillText(line, 600, y);
@@ -479,30 +524,6 @@ async function drawCard(result) {
     ctx.shadowOffsetY = 9;
     drawContained(ctx, image, 113, 380, 974, 470);
     ctx.restore();
-
-    // Place the larger seal in the photo's upper-right opening.
-    ctx.beginPath(); ctx.arc(1015, 337, 133, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff"; ctx.fill();
-    ctx.strokeStyle = "#183d70"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath(); ctx.arc(1015, 337, 123, 0, Math.PI * 2);
-    ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
-    const sealTop = { lines: result.sealTop.replace(/まで$/, "\nまで").split("\n"), lineHeight: 37 };
-    const sealBottom = { lines: sealBottomLines(result), lineHeight: 37 };
-    ctx.fillStyle = "#082856";
-    ctx.font = '800 32px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    drawCenteredLines(ctx, sealTop, 1015, 270);
-    ctx.beginPath();
-    for (let x = 940; x <= 1090; x += 4) {
-      const y = 329 + Math.sin((x - 940) * Math.PI / 12) * 2.5;
-      if (x === 940) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.strokeStyle = "#849bbb";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    const sealBottomSize = Math.max(...sealBottom.lines.map((line) => Array.from(line).length)) >= 7 ? 28 : 30;
-    ctx.font = `800 ${sealBottomSize}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
-    drawCenteredLines(ctx, sealBottom, 1015, 376);
 
     roundedRect(ctx, 76, 910, 1048, 200, 10, "#fff", "#183d70", 2);
     roundedRect(ctx, 85, 918, 1030, 184, 7, null, "#dce6f0", 2);
@@ -572,6 +593,8 @@ async function drawCard(result) {
     ctx.textAlign = "right";
     ctx.font = '800 36px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText(HASHTAG, 1148, 1392);
+    // Draw the seal last so the dish, frame, title, and decorations cannot cover it.
+    drawResultSeal(ctx, result);
     canvas.toBlob((blob) => {
       if (!blob || !canvas.isConnected) return;
       cardPngBlob = blob;

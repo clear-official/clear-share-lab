@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Recipe Maru";
+  src: url("../assets/recipe/ZenMaruGothic-Black-recipe.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+}
+
 :root {
   color-scheme: light;
   font-family: "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
@@ -173,18 +181,14 @@ body.home-mode { background-color: #fff9f7; }
 .result-intro img { width: 94px; height: 122px; object-fit: contain; flex: none; }
 .eyebrow { position: relative; display: flex; align-items: center; justify-content: center; min-height: 58px; margin: 0; padding: 9px 12px; border: 2px solid var(--line); border-radius: 19px; background: #fff; box-shadow: 3px 4px 0 #fbe1e5; color: var(--red); font-size: .94rem; font-weight: 900; line-height: 1.4; white-space: nowrap; }
 .eyebrow::before { content: ""; position: absolute; top: 50%; left: -8px; width: 14px; height: 14px; transform: translateY(-50%) rotate(45deg); border-left: 2px solid var(--line); border-bottom: 2px solid var(--line); background: #fff; }
-.result-title { width: fit-content; max-width: 100%; margin: 2px auto 8px; padding: 0 6px 2px; color: var(--navy); font-family: "Meiryo", "Yu Gothic", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.4; text-align: center; word-break: keep-all; overflow-wrap: normal; }
-.result-cover-head { position: relative; display: flex; align-items: center; justify-content: center; min-height: clamp(92px, 25vw, 124px); }
-.result-cover-head .result-title { width: 100%; min-width: 0; margin: 0; font-size: clamp(1.15rem, 5.4vw, 2.55rem); }
-.result-seal { position: absolute; top: 50%; right: -47px; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(92px, 25vw, 124px); aspect-ratio: 1; transform: translateY(-50%); padding: 8px 4px; border: 2px solid var(--line); border-radius: 50%; outline: 2px dotted var(--line); outline-offset: -7px; background: #fff; color: var(--navy); font-size: clamp(.76rem, 3.1vw, .92rem); font-weight: 900; line-height: 1.17; text-align: center; }
-.result-seal-top, .result-seal-bottom { display: block; }
+.result-title { width: fit-content; max-width: 100%; margin: 2px auto 8px; padding: 0 6px 2px; color: var(--navy); font-family: "Recipe Maru", "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.4; text-align: center; word-break: keep-all; overflow-wrap: normal; }
+.result-cover-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; min-height: clamp(92px, 25vw, 124px); }
+.result-cover-head .result-title { width: 100%; min-width: 0; margin: 0; padding: 0; }
+.result-title-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.result-seal { position: absolute; top: calc(100% - 10px); right: -47px; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(118px, 34vw, 150px); aspect-ratio: 1; padding: 12px 8px; border: 2px solid var(--line); border-radius: 50%; outline: 2px dotted var(--line); outline-offset: -7px; background: #fff; color: var(--navy); font-family: "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; font-size: clamp(10.8px, 3.05vw, 13.4px); font-weight: 900; line-height: 1.2; text-align: center; }
+.result-seal-top, .result-seal-bottom { display: block; white-space: nowrap; }
 .result-seal-divider { display: block; width: 65%; margin: 4px 0; border-top: 1px dashed #849bbb; }
 .result-seal-bottom { font-size: .98em; }
-.result-title-line { position: relative; display: block; width: fit-content; margin: auto; white-space: nowrap; background: linear-gradient(transparent 62%, #ffe16b 62% 91%, transparent 91%); }
-.result-title-line::before, .result-title-line::after { content: attr(data-text); position: absolute; inset: 0; white-space: nowrap; pointer-events: none; }
-.result-title-line::before { z-index: 0; color: var(--navy); -webkit-text-stroke: 11px var(--navy); }
-.result-title-line::after { z-index: 1; color: #fff; -webkit-text-stroke: 8px #fff; }
-.result-title-face { position: relative; z-index: 2; color: var(--navy); }
 .dish-frame { width: min(100%, 520px); margin: 0 auto; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy); }
 .dish-photo { padding: 11px 11px 24px; border: 1px solid #d5dee9; background: #fff; }
 .dish-art { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1402 / 1122; }
@@ -294,8 +298,7 @@ html:has(.share-heading) { scrollbar-gutter: stable; }
   .hero-chef { width: min(56%, 210px); }
 }
 @media (max-width: 350px) {
-  .result-cover-head .result-title { font-size: 1.08rem; }
-  .result-seal { width: 82px; right: -44px; font-size: .65rem; }
+  .result-seal { width: 112px; right: -32px; font-size: 10.5px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .seasoning-grain { animation: none; opacity: .9; }

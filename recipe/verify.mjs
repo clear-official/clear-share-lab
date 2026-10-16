@@ -98,7 +98,7 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
   const document = {
     title: "",
     body: { classList: { toggle(name, enabled) { enabled ? classes.add(name) : classes.delete(name); } } },
-    fonts: { ready: Promise.resolve() },
+    fonts: { load: async () => [], ready: Promise.resolve() },
     querySelector(selector) {
       return selector === "#app" ? app
         : withCanvas && selector === "#recipe-card" ? canvas
@@ -240,6 +240,9 @@ for (const type of types) {
   assert.ok(flavorLines.length <= 2 && flavorLines.every(({ text }) => Array.from(text).length > 1), `隠し味の一文字改行なし: ${type}`);
   assert.equal(flavorLines.reduce((sum, { y }) => sum + y, 0) / flavorLines.length, 1233, `隠し味の縦中央: ${type}`);
   assert.equal(card.drawnText.find(({ text }) => text === "#CLEARシェアラボ")?.fillStyle, "#082856", `ハッシュタグの色: ${type}`);
+  const finalSealLines = card.drawnText.slice(-4).map(({ text }) => text);
+  assert.equal(finalSealLines.slice(0, 2).join(""), result.sealTop, `丸い欄を最後に描画（上段）: ${type}`);
+  assert.equal(finalSealLines.slice(2).join(""), result.sealBottom, `丸い欄を最後に描画（下段）: ${type}`);
   assert.ok(card.drawnText.every(({ x, y }) => x >= 0 && x <= 1200 && y >= 0 && y <= 1500));
 }
 for (const flavorType of types) {
