@@ -444,8 +444,8 @@ async function drawCard(result) {
     drawGingham(ctx, background, 0, 56);
     drawGingham(ctx, background, 1444, 56);
     drawContained(ctx, title, 380, 64, 440, 110);
-    roundedRect(ctx, 42, 183, 1116, 715, 14, "#082856", "#183d70", 4);
-    roundedRect(ctx, 76, 197, 1048, 686, 3, "#fff", "#d5dfe9", 2);
+    roundedRect(ctx, 42, 183, 1116, 945, 14, "#082856", "#183d70", 4);
+    roundedRect(ctx, 76, 197, 1048, 917, 3, "#fff", "#d5dfe9", 2);
     ctx.textAlign = "center";
     const nameParts = resultNameParts(result);
     ctx.font = '900 76px "Meiryo", sans-serif';
@@ -504,13 +504,13 @@ async function drawCard(result) {
     ctx.font = `800 ${sealBottomSize}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
     drawCenteredLines(ctx, sealBottom, 1015, 376);
 
-    roundedRect(ctx, 42, 916, 1116, 203, 10, "#fff", "#183d70", 2);
-    roundedRect(ctx, 51, 924, 1098, 187, 7, null, "#dce6f0", 2);
-    roundedRect(ctx, 72, 905, 120, 43, 20, "#ec183d", "#ec183d", 2);
+    roundedRect(ctx, 76, 910, 1048, 200, 10, "#fff", "#183d70", 2);
+    roundedRect(ctx, 85, 918, 1030, 184, 7, null, "#dce6f0", 2);
+    roundedRect(ctx, 106, 899, 120, 43, 20, "#ec183d", "#ec183d", 2);
     ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("総評", 89, 936);
+    ctx.fillText("総評", 123, 930);
     const summaryLines = {
       A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
       B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
@@ -523,7 +523,7 @@ async function drawCard(result) {
     const description = fitLines(ctx, summaryLines.join("\n"), 865, 144, 39, 39, 700, 1.34);
     if (description.lines.length !== 2) throw new Error("総評が2行に収まりません");
     ctx.fillStyle = "#082856";
-    description.lines.forEach((line, index) => ctx.fillText(line, 80, 1005 + index * description.lineHeight));
+    description.lines.forEach((line, index) => ctx.fillText(line, 112, 1005 + index * description.lineHeight));
     drawContained(ctx, chef, 931, 869, 254, 250);
 
     roundedRect(ctx, 42, 1137, 711, 112, 8, "#fffdfb", "#8ba0b8", 2);

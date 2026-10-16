@@ -232,7 +232,7 @@ for (const type of types) {
     E: ["予定どおりにいかなくても、手元に", "あるものから別の道を見つけられる人です。"],
     F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
   }[type];
-  const summaryLines = card.drawnText.filter(({ x, y }) => x === 80 && y >= 1000 && y <= 1090);
+  const summaryLines = card.drawnText.filter(({ x, y }) => x === 112 && y >= 1000 && y <= 1090);
   assert.deepEqual(summaryLines.map(({ text }) => text), summaryBreaks, `総評の2行と改行位置: ${type}`);
   assert.ok(card.drawnText.some(({ text, x, y }) => text === "隠し味" && x === 805 && y === 1175), `隠し味の見出し位置: ${type}`);
   const flavorLines = card.drawnText.filter(({ x, y }) => x === 968.5 && y >= 1200 && y <= 1302);
