@@ -348,6 +348,22 @@ function roundedRect(ctx, x, y, width, height, radius, fill, stroke, lineWidth =
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
 }
+function drawRedPillLabel(ctx, label, x, y, width, height, fontSize) {
+  roundedRect(ctx, x, y, width, height, height / 2, "#ec183d", "#ec183d");
+  const previousAlign = ctx.textAlign;
+  const previousBaseline = ctx.textBaseline;
+  const previousFill = ctx.fillStyle;
+  const previousFont = ctx.font;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${fontSize}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+  ctx.fillText(label, x + width / 2, y + height / 2);
+  ctx.textAlign = previousAlign;
+  ctx.textBaseline = previousBaseline;
+  ctx.fillStyle = previousFill;
+  ctx.font = previousFont;
+}
 function drawGingham(ctx, background, y, height) {
   for (let x = 0; x < 1200; x += 700) {
     const width = Math.min(700, 1200 - x);
@@ -446,7 +462,7 @@ function drawResultSeal(ctx, result) {
     throw new Error("丸い欄の文字が円内に収まりません");
   };
   const topBaselines = [331, 361];
-  const bottomBaselines = [416, 446];
+  const bottomBaselines = [426, 456];
   const topSize = fitSize(topLines, topBaselines, 27);
   const bottomSize = fitSize(bottomLines, bottomBaselines, 26);
 
@@ -527,11 +543,8 @@ async function drawCard(result) {
 
     roundedRect(ctx, 76, 910, 1048, 200, 10, "#fff", "#183d70", 2);
     roundedRect(ctx, 85, 918, 1030, 184, 7, null, "#dce6f0", 2);
-    roundedRect(ctx, 106, 899, 120, 43, 20, "#ec183d", "#ec183d", 2);
-    ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
-    ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("総評", 123, 930);
+    drawRedPillLabel(ctx, "総評", 106, 923, 120, 42, 28);
     const summaryLines = {
       A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
       B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
@@ -541,19 +554,16 @@ async function drawCard(result) {
       F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
     }[result.type];
     if (!summaryLines || summaryLines.join("") !== result.description) throw new Error("総評の改行位置を確認してください");
-    const description = fitLines(ctx, summaryLines.join("\n"), 865, 144, 39, 39, 700, 1.34);
+    const description = fitLines(ctx, summaryLines.join("\n"), 850, 144, 42, 38, 700, 1.34);
     if (description.lines.length !== 2) throw new Error("総評が2行に収まりません");
     ctx.fillStyle = "#082856";
-    description.lines.forEach((line, index) => ctx.fillText(line, 112, 1005 + index * description.lineHeight));
+    description.lines.forEach((line, index) => ctx.fillText(line, 112, 1014 + index * description.lineHeight));
     drawContained(ctx, chef, 931, 869, 254, 250);
 
     roundedRect(ctx, 42, 1137, 711, 112, 8, "#fffdfb", "#8ba0b8", 2);
     ctx.fillStyle = "#ec183d";
     ctx.fillRect(42, 1147, 5, 91);
-    roundedRect(ctx, 54, 1144, 145, 39, 19, "#ec183d", "#ec183d", 2);
-    ctx.fillStyle = "#fff";
-    ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("主成分", 68, 1172);
+    drawRedPillLabel(ctx, "主成分", 54, 1144, 145, 39, 26);
     const ingredients = fitLines(ctx, result.ingredients, 640, 45, 34, 28, 700, 1.2);
     ctx.fillStyle = "#082856";
     ingredients.lines.forEach((line, index) => ctx.fillText(line, 94, 1230 + index * ingredients.lineHeight));
@@ -563,9 +573,9 @@ async function drawCard(result) {
     ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("おいしくなるコツ", 68, 1295);
     const tipText = result.tip.replace("、", "、\n");
-    const tip = fitLines(ctx, tipText, 640, 105, 32, 26, 700, 1.08);
+    const tip = fitLines(ctx, tipText, 640, 105, 32, 26, 700, 1.25);
     ctx.fillStyle = "#082856";
-    tip.lines.forEach((line, index) => ctx.fillText(line, 94, 1350 + index * tip.lineHeight));
+    tip.lines.forEach((line, index) => ctx.fillText(line, 94, 1348 + index * tip.lineHeight));
 
     roundedRect(ctx, 779, 1137, 379, 165, 5, "#fff1ba", null);
     ctx.fillStyle = "#fffefa";

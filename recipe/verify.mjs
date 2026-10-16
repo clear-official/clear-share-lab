@@ -76,7 +76,7 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
     beginPath() {}, moveTo() {}, lineTo() {}, arcTo() {}, closePath() {}, rect() {}, clip() {}, save() {}, restore() {},
     fill() {}, stroke() {}, fillRect() {}, strokeRect() {}, arc() {}, setLineDash() {}, strokeText() {}, drawImage() { this.imageCount += 1; },
     imageCount: 0,
-    fillText(text, x, y) { drawnText.push({ text, x, y, fillStyle: this.fillStyle }); },
+    fillText(text, x, y) { drawnText.push({ text, x, y, fillStyle: this.fillStyle, textAlign: this.textAlign, textBaseline: this.textBaseline }); },
     measureText(text) {
       const size = Number(/(\d+)px/.exec(this.font)?.[1] || 16);
       return { width: Array.from(text).reduce((width, char) => width + (/[\u0020-\u007e]/.test(char) ? .58 : 1) * size, 0) };
@@ -234,6 +234,15 @@ for (const type of types) {
   }[type];
   const summaryLines = card.drawnText.filter(({ x, y }) => x === 112 && y >= 1000 && y <= 1090);
   assert.deepEqual(summaryLines.map(({ text }) => text), summaryBreaks, `総評の2行と改行位置: ${type}`);
+  assert.equal(summaryLines[0].y, 1014, `総評本文の上余白: ${type}`);
+  assert.ok(summaryLines[1].y < 1080, `総評本文の下余白: ${type}`);
+  for (const [label, x, y] of [["総評", 166, 944], ["主成分", 126.5, 1163.5]]) {
+    const drawn = card.drawnText.find((entry) => entry.text === label);
+    assert.ok(drawn && drawn.x === x && drawn.y === y && drawn.textAlign === "center" && drawn.textBaseline === "middle", `赤いラベル内の中央配置: ${type} ${label}`);
+  }
+  const tipLines = card.drawnText.filter(({ x, y }) => x === 94 && y >= 1340 && y <= 1410);
+  assert.equal(tipLines.length, 2, `おいしくなるコツの2行: ${type}`);
+  assert.ok(tipLines[1].y - tipLines[0].y >= 32.5 && tipLines[1].y < 1400, `おいしくなるコツの行間と下余白: ${type}`);
   assert.ok(card.drawnText.some(({ text, x, y }) => text === "隠し味" && x === 805 && y === 1175), `隠し味の見出し位置: ${type}`);
   const flavorLines = card.drawnText.filter(({ x, y }) => x === 968.5 && y >= 1200 && y <= 1302);
   assert.equal(flavorLines.map(({ text }) => text).join(""), flavor.hiddenFlavorText, `隠し味の本文: ${type}`);
@@ -243,6 +252,7 @@ for (const type of types) {
   const finalSealLines = card.drawnText.slice(-4).map(({ text }) => text);
   assert.equal(finalSealLines.slice(0, 2).join(""), result.sealTop, `丸い欄を最後に描画（上段）: ${type}`);
   assert.equal(finalSealLines.slice(2).join(""), result.sealBottom, `丸い欄を最後に描画（下段）: ${type}`);
+  assert.deepEqual(card.drawnText.slice(-4).map(({ y }) => y), [331, 361, 426, 456], `丸い欄は下段だけを下げる: ${type}`);
   assert.ok(card.drawnText.every(({ x, y }) => x >= 0 && x <= 1200 && y >= 0 && y <= 1500));
 }
 for (const flavorType of types) {
