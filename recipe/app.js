@@ -32,7 +32,7 @@ function validContent() {
       && question.answers.every((answer) => typeof answer.text === "string" && answer.text.trim() && types.has(answer.type)))
     && CONTENT.results.every((result) => result.image && result.name?.trim() && result.ingredients?.trim()
       && result.description?.trim() && result.tip?.trim() && result.hiddenFlavorText?.trim()
-      && result.sealTop?.trim() && result.sealBottom?.trim());
+      && result.seal?.trim());
 }
 
 const READY = validContent();
@@ -124,16 +124,16 @@ function resultNameMarkup(result) {
   }).join("");
   return `<svg class="result-title-svg" viewBox="0 0 600 144" aria-hidden="true"><g text-anchor="middle" font-family="Recipe Maru, Hiragino Maru Gothic ProN, Meiryo, sans-serif" font-size="48" font-weight="900">${lines}</g></svg>`;
 }
-function sealBottomLines(result) {
+function sealLines(result) {
   const lines = {
-    A: ["思いついたら", "すぐ"],
-    B: ["気になったら", "あっという間"],
-    C: ["変化に気づいた", "そのとき"],
-    D: ["段取りが", "整ってから"],
-    E: ["予定が変わった", "その場で"],
-    F: ["コトコト、", "じっくり"],
+    A: ["思いついたら", "即行動"],
+    B: ["気になったら", "すぐ調べる"],
+    C: ["変化に気づいたら", "すぐ声かけ"],
+    D: ["条件を確認してから", "動き出す"],
+    E: ["予定が変わったら", "すぐに切り替え"],
+    F: ["少しずつ、", "じっくり積み重ねる"],
   }[result.type];
-  if (!lines || lines.join("") !== result.sealBottom) throw new Error("丸い欄の文言を確認してください");
+  if (!lines || lines.join("") !== result.seal) throw new Error("丸い欄の文言を確認してください");
   return lines;
 }
 function shell(body, back = "", variant = "") {
@@ -208,12 +208,16 @@ function quizView(index) {
     <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${QUIZ_CHEF_IMAGE}" alt="調味料をフライパンに振るリアちゃん" width="1230" height="1278">${seasoningMarkup()}</div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }
 function resultView(result) {
+  const ingredientMarkup = result.type === "F"
+    ? escapeHtml(result.ingredients).replace("／", "／<br>")
+    : escapeHtml(result.ingredients);
   return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
-    <div class="dish-frame"><div class="dish-photo"><div class="result-cover-head"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-seal" aria-label="${escapeHtml(result.sealTop)}、${escapeHtml(result.sealBottom)}"><span class="result-seal-top">${escapeHtml(result.sealTop.replace(/まで$/, ""))}<br>まで</span><span class="result-seal-divider" aria-hidden="true"></span><span class="result-seal-bottom">${sealBottomLines(result).map(escapeHtml).join("<br>")}</span></div></div><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
-    <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${escapeHtml(result.ingredients)}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
+    <div class="dish-frame"><div class="dish-photo"><div class="result-cover-head"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-seal" aria-label="${escapeHtml(result.seal)}"><span class="result-seal-text">${sealLines(result).map(escapeHtml).join("<br>")}</span></div></div><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
+    <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${ingredientMarkup}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
     <section class="result-section result-flavor"><h2>隠し味</h2><p>${escapeHtml(result.hiddenFlavor)}</p></section>
+    <section class="result-explainer" aria-labelledby="result-explainer-title"><h2 id="result-explainer-title">結果の見方</h2><dl><div><dt>丸い欄</dt><dd>回答から見えた、行動の始め方や進め方です。</dd></div><div><dt>総評</dt><dd>診断で最も強く出たタイプの特徴です。</dd></div><div><dt>主成分</dt><dd>そのタイプの中心になる強みです。</dd></div><div><dt>おいしくなるコツ</dt><dd>その強みを活かすためのヒントです。</dd></div><div><dt>隠し味</dt><dd>診断で２番目に強く出たタイプの特徴です。</dd></div></dl></section>
     <div class="result-actions"><button class="primary" data-action="share-page">ポイント獲得方法はコチラ</button><button class="secondary" data-action="restart">もう一度診断する</button></div><div class="result-band result-band-bottom" aria-hidden="true"></div>`, "q-7", "result-paper");
 }
 function shareText(result) {
@@ -444,6 +448,15 @@ function fitLines(ctx, text, maxWidth, maxHeight, startSize, minSize, weight, li
   }
   throw new Error("カードの原稿が所定の領域に収まりません。配置を調整してください。");
 }
+function fitExactLines(ctx, lines, maxWidth, startSize, minSize, weight, lineFactor) {
+  for (let size = startSize; size >= minSize; size -= 1) {
+    ctx.font = `${weight} ${size}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+    if (lines.every((line) => ctx.measureText(line).width <= maxWidth)) {
+      return { lines, size, lineHeight: size * lineFactor };
+    }
+  }
+  throw new Error("カードの2行原稿が枠に収まりません");
+}
 function drawCenteredBodyLines(ctx, layout, x, y) {
   const previousAlign = ctx.textAlign;
   const previousBaseline = ctx.textBaseline;
@@ -456,25 +469,21 @@ function drawCenteredBodyLines(ctx, layout, x, y) {
 }
 function drawResultSeal(ctx, result) {
   const x = 1015, y = 385, radius = 133;
-  const topLines = [result.sealTop.replace(/まで$/, ""), "まで"];
-  const bottomLines = sealBottomLines(result);
-  if (!result.sealTop.endsWith("まで")) throw new Error("丸い欄の文言を確認してください");
-  const fitSize = (lines, baselines, startSize) => {
-    for (let size = startSize; size >= 23; size--) {
+  const lines = sealLines(result);
+  const lineHeight = 35;
+  const centers = lines.map((_, index) => y + (index - (lines.length - 1) / 2) * lineHeight);
+  const fitSize = () => {
+    for (let size = 32; size >= 22; size--) {
       ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
       if (lines.every((line, index) => {
-        const baseline = baselines[index];
-        const edge = Math.max(Math.abs(baseline - size - y), Math.abs(baseline + size * .15 - y));
+        const edge = Math.abs(centers[index] - y) + size * .58;
         const halfWidth = Math.sqrt(radius * radius - edge * edge) - 18;
         return ctx.measureText(line).width / 2 <= halfWidth;
       })) return size;
     }
     throw new Error("丸い欄の文字が円内に収まりません");
   };
-  const topBaselines = [331, 361];
-  const bottomBaselines = [426, 456];
-  const topSize = fitSize(topLines, topBaselines, 27);
-  const bottomSize = fitSize(bottomLines, bottomBaselines, 26);
+  const size = fitSize();
 
   ctx.save();
   ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -484,17 +493,9 @@ function drawResultSeal(ctx, result) {
   ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle = "#082856";
   ctx.textAlign = "center";
-  ctx.font = `800 ${topSize}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
-  topLines.forEach((line, index) => ctx.fillText(line, x, topBaselines[index]));
-  ctx.beginPath();
-  for (let lineX = 940; lineX <= 1090; lineX += 4) {
-    const lineY = 385 + Math.sin((lineX - 940) * Math.PI / 12) * 2.5;
-    if (lineX === 940) ctx.moveTo(lineX, lineY);
-    else ctx.lineTo(lineX, lineY);
-  }
-  ctx.strokeStyle = "#849bbb"; ctx.lineWidth = 2; ctx.stroke();
-  ctx.font = `800 ${bottomSize}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
-  bottomLines.forEach((line, index) => ctx.fillText(line, x, bottomBaselines[index]));
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
+  lines.forEach((line, index) => ctx.fillText(line, x, centers[index]));
   ctx.restore();
 }
 async function drawCard(result) {
@@ -556,15 +557,15 @@ async function drawCard(result) {
     ctx.textAlign = "left";
     drawRedPillLabel(ctx, "総評", 106, 923, 120, 42, 28);
     const summaryLines = {
-      A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
-      B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
-      C: ["相手の希望や困ることに目が向く人。", "みんなが心地よく過ごせる形を探せます。"],
-      D: ["時間や条件を確かめて、次に必要なことを", "考えられる人。準備が整うほど力を発揮します。"],
-      E: ["予定どおりにいかなくても、手元に", "あるものから別の道を見つけられる人です。"],
-      F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
+      A: ["思いついたことを、まず試してみる人。", "動きながら、自分に合うやり方を見つけます。"],
+      B: ["気になることを、自分で詳しく調べる人。", "知るほど興味が深まり、楽しみが広がります。"],
+      C: ["相手の希望や困りごとに気づける人。", "話を聞きながら、相手に合う方法を考えます。"],
+      D: ["時間や予算などを先に確認し、進め方を考える人。", "必要な準備を整えてから行動できます。"],
+      E: ["予定どおりにいかないときも、今あるものを使って", "別の方法を考えられる人です。"],
+      F: ["急がず、自分のペースで続ける人。少しずつ", "経験を重ね、できることを増やしていきます。"],
     }[result.type];
     if (!summaryLines || summaryLines.join("") !== result.description) throw new Error("総評の改行位置を確認してください");
-    const description = fitLines(ctx, summaryLines.join("\n"), 790, 144, 39, 35, 700, 1.34);
+    const description = fitExactLines(ctx, summaryLines, 790, 39, 30, 700, 1.34);
     if (description.lines.length !== 2) throw new Error("総評が2行に収まりません");
     ctx.fillStyle = "#082856";
     description.lines.forEach((line, index) => ctx.fillText(line, 112, 1014 + index * description.lineHeight));
@@ -576,7 +577,7 @@ async function drawCard(result) {
     drawRedPillLabel(ctx, "主成分", 54, 1144, 145, 39, 26);
     const ingredients = fitLines(ctx, result.ingredients, 640, 45, 34, 28, 700, 1.2);
     ctx.fillStyle = "#082856";
-    drawCenteredBodyLines(ctx, ingredients, 397.5, 1196);
+    drawCenteredBodyLines(ctx, ingredients, 397.5, 1216);
     roundedRect(ctx, 42, 1259, 711, 165, 8, "#fffafb", "#ec9da8", 2);
     roundedRect(ctx, 54, 1267, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";
@@ -594,10 +595,10 @@ async function drawCard(result) {
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("隠し味", 805, 1175);
     const flavorText = ({
-      "まず試してみる軽やかさ": "まず試してみる\n軽やかさ",
+      "思いついたことをすぐ試す行動力": "思いついたことを\nすぐ試す行動力",
       "気になることを掘り下げる好奇心": "気になることを\n掘り下げる好奇心",
-      "相手の希望に目を向ける気づかい": "相手の希望に\n目を向ける気づかい",
-      "条件を確かめて整える視点": "条件を確かめて\n整える視点",
+      "相手の希望を確かめる気づかい": "相手の希望を\n確かめる気づかい",
+      "条件を確かめて段取りを考える力": "条件を確かめて\n段取りを考える力",
       "別の方法を見つける柔軟さ": "別の方法を\n見つける柔軟さ",
       "自分のペースで続ける粘り強さ": "自分のペースで\n続ける粘り強さ",
     })[result.hiddenFlavor] || result.hiddenFlavor;

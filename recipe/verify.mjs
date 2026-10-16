@@ -16,6 +16,17 @@ function content() {
 const data = content();
 assert.equal(data.questions.length, 7);
 assert.equal(data.results.length, 6);
+const finalCopy = {
+  A: ["名物まかないプレート", "思いついたら即行動", "思いついたことを、まず試してみる人。動きながら、自分に合うやり方を見つけます。", "まず試す力／形にする力", "やりたいことが増えたら、まず一つを最後までやってみて。", "思いついたことをすぐ試す行動力"],
+  B: ["好き全部のせカレー", "気になったらすぐ調べる", "気になることを、自分で詳しく調べる人。知るほど興味が深まり、楽しみが広がります。", "好奇心／詳しく調べる力", "調べて分かったことを誰かと話すと、新しい発見につながるかも。", "気になることを掘り下げる好奇心"],
+  C: ["ほっとさせるあったかスープ", "変化に気づいたらすぐ声かけ", "相手の希望や困りごとに気づける人。話を聞きながら、相手に合う方法を考えます。", "気づく力／相手の話を聞く力", "相手の希望を聞いたら、自分の希望も伝えてみて。", "相手の希望を確かめる気づかい"],
+  D: ["先読みフルコース", "条件を確認してから動き出す", "時間や予算などを先に確認し、進め方を考える人。必要な準備を整えてから行動できます。", "見通す力／段取りを組む力", "予定を詰め込みすぎず、当日を楽しむ余裕も残してみて。", "条件を確かめて段取りを考える力"],
+  E: ["逆転アレンジパスタ", "予定が変わったらすぐに切り替え", "予定どおりにいかないときも、今あるものを使って別の方法を考えられる人です。", "切り替える力／工夫する力", "うまくいった工夫は覚えておくと、次にも役立ちます。", "別の方法を見つける柔軟さ"],
+  F: ["じっくり煮込みシチュー", "少しずつ、じっくり積み重ねる", "急がず、自分のペースで続ける人。少しずつ経験を重ね、できることを増やしていきます。", "自分のペースを守る力／続ける力", "ときどき振り返ると、続けてきたことに気づけます。", "自分のペースで続ける粘り強さ"],
+};
+for (const result of data.results) {
+  assert.deepEqual([result.name, result.seal, result.description, result.ingredients, result.tip, result.hiddenFlavorText], finalCopy[result.type], `確定稿: ${result.type}`);
+}
 assert.deepEqual(Array.from(data.questions, (question) => Array.from(question.answers, (answer) => answer.type).join("")), mappings);
 for (const type of types) {
   const count = data.questions.flatMap((question) => question.answers).filter((answer) => answer.type === type).length;
@@ -181,13 +192,19 @@ for (const [type, choices] of examples) {
   assert.equal(site.location.hash, "#result");
   const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.id === data.resolveHiddenFlavor(choices));
-  for (const copy of [result.name, result.image, result.ingredients, result.description, result.tip, result.sealTop, flavor.hiddenFlavorText]) {
-    assert.ok(site.app.innerHTML.includes(copy), `結果画面の内容: ${type} ${copy}`);
+  const renderedText = site.app.innerHTML.replace(/<[^>]*>/g, "");
+  for (const copy of [result.name, result.ingredients, result.description, result.tip, flavor.hiddenFlavorText]) {
+    assert.ok(renderedText.includes(copy) || site.app.innerHTML.includes(copy), `結果画面の内容: ${type} ${copy}`);
   }
+  assert.ok(site.app.innerHTML.includes(result.image), `料理画像: ${type}`);
+  assert.ok(site.app.innerHTML.includes(`aria-label="${result.seal}"`), `丸い欄の文言: ${type}`);
   assert.ok(site.app.innerHTML.includes('class="result-seal"'), `丸い欄: ${type}`);
+  assert.match(site.app.innerHTML, /結果の見方/, `結果の見方: ${type}`);
+  assert.doesNotMatch(site.app.innerHTML, /result-seal-divider/, `波線なし: ${type}`);
   await site.click("share-page");
   assert.equal(site.location.hash, "#share");
   assert.match(site.app.innerHTML, /width="1200" height="1500"/);
+  assert.doesNotMatch(site.app.innerHTML, /結果の見方/, `カードに説明欄を入れない: ${type}`);
   assert.match(site.app.innerHTML, /#CLEARシェアラボ/);
   assert.match(site.app.innerHTML, /運営側が確認後、100ptを加算/);
   assert.match(site.app.innerHTML, /スクリーンショットは切り取らないでください/);
@@ -221,16 +238,16 @@ for (const type of types) {
   const text = card.drawnText.map((entry) => entry.text).join("");
   const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.type === alternate);
-  for (const copy of [result.name, result.ingredients, result.description, result.tip, result.sealTop, result.sealBottom, flavor.hiddenFlavorText]) {
+  for (const copy of [result.name, result.ingredients, result.description, result.tip, result.seal, flavor.hiddenFlavorText]) {
     assert.ok(text.includes(copy), `カードの文字: ${type} ${copy}`);
   }
   const summaryBreaks = {
-    A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
-    B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
-    C: ["相手の希望や困ることに目が向く人。", "みんなが心地よく過ごせる形を探せます。"],
-    D: ["時間や条件を確かめて、次に必要なことを", "考えられる人。準備が整うほど力を発揮します。"],
-    E: ["予定どおりにいかなくても、手元に", "あるものから別の道を見つけられる人です。"],
-    F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
+    A: ["思いついたことを、まず試してみる人。", "動きながら、自分に合うやり方を見つけます。"],
+    B: ["気になることを、自分で詳しく調べる人。", "知るほど興味が深まり、楽しみが広がります。"],
+    C: ["相手の希望や困りごとに気づける人。", "話を聞きながら、相手に合う方法を考えます。"],
+    D: ["時間や予算などを先に確認し、進め方を考える人。", "必要な準備を整えてから行動できます。"],
+    E: ["予定どおりにいかないときも、今あるものを使って", "別の方法を考えられる人です。"],
+    F: ["急がず、自分のペースで続ける人。少しずつ", "経験を重ね、できることを増やしていきます。"],
   }[type];
   const summaryLines = card.drawnText.filter(({ x, y }) => x === 112 && y >= 1000 && y <= 1090);
   assert.deepEqual(summaryLines.map(({ text }) => text), summaryBreaks, `総評の2行と改行位置: ${type}`);
@@ -244,7 +261,7 @@ for (const type of types) {
   }
   const ingredientLines = card.drawnText.filter(({ x, y }) => x === 397.5 && y >= 1170 && y <= 1225);
   assert.equal(ingredientLines.map(({ text }) => text).join(""), result.ingredients, `主成分の本文を中央配置: ${type}`);
-  assert.ok(ingredientLines.every(({ y, textAlign, textBaseline }) => y === 1196 && textAlign === "center" && textBaseline === "middle"), `主成分の中央揃えと上方向の調整: ${type}`);
+  assert.ok(ingredientLines.every(({ y, textAlign, textBaseline }) => y === 1216 && textAlign === "center" && textBaseline === "middle"), `主成分の中央揃え: ${type}`);
   const tipLines = card.drawnText.filter(({ x, y }) => x === 397.5 && y >= 1320 && y <= 1410);
   assert.equal(tipLines.length, 2, `おいしくなるコツの2行: ${type}`);
   assert.equal(tipLines.map(({ text }) => text).join(""), result.tip, `おいしくなるコツの文言: ${type}`);
@@ -256,10 +273,9 @@ for (const type of types) {
   assert.ok(flavorLines.length <= 2 && flavorLines.every(({ text }) => Array.from(text).length > 1), `隠し味の一文字改行なし: ${type}`);
   assert.equal(flavorLines.reduce((sum, { y }) => sum + y, 0) / flavorLines.length, 1233, `隠し味の縦中央: ${type}`);
   assert.equal(card.drawnText.find(({ text }) => text === "#CLEARシェアラボ")?.fillStyle, "#082856", `ハッシュタグの色: ${type}`);
-  const finalSealLines = card.drawnText.slice(-4).map(({ text }) => text);
-  assert.equal(finalSealLines.slice(0, 2).join(""), result.sealTop, `丸い欄を最後に描画（上段）: ${type}`);
-  assert.equal(finalSealLines.slice(2).join(""), result.sealBottom, `丸い欄を最後に描画（下段）: ${type}`);
-  assert.deepEqual(card.drawnText.slice(-4).map(({ y }) => y), [331, 361, 426, 456], `丸い欄は下段だけを下げる: ${type}`);
+  const finalSealLines = card.drawnText.slice(-2);
+  assert.equal(finalSealLines.map(({ text }) => text).join(""), result.seal, `丸い欄を最後に描画: ${type}`);
+  assert.deepEqual(finalSealLines.map(({ y }) => y), [367.5, 402.5], `丸い欄を縦中央に配置: ${type}`);
   assert.ok(card.drawnText.every(({ x, y }) => x >= 0 && x <= 1200 && y >= 0 && y <= 1500));
 }
 for (const flavorType of types) {

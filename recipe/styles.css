@@ -186,9 +186,7 @@ body.home-mode { background-color: #fff9f7; }
 .result-cover-head .result-title { width: 100%; min-width: 0; margin: 0; padding: 0; }
 .result-title-svg { display: block; width: 100%; height: auto; overflow: visible; }
 .result-seal { position: absolute; top: calc(100% - 10px); right: -47px; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(118px, 34vw, 150px); aspect-ratio: 1; padding: 12px 8px; border: 2px solid var(--line); border-radius: 50%; outline: 2px dotted var(--line); outline-offset: -7px; background: #fff; color: var(--navy); font-family: "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; font-size: clamp(10.8px, 3.05vw, 13.4px); font-weight: 900; line-height: 1.2; text-align: center; }
-.result-seal-top, .result-seal-bottom { display: block; white-space: nowrap; }
-.result-seal-divider { display: block; width: 65%; margin: 4px 0; border-top: 1px dashed #849bbb; }
-.result-seal-bottom { font-size: .98em; }
+.result-seal-text { display: block; white-space: nowrap; }
 .dish-frame { width: min(100%, 520px); margin: 0 auto; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy); }
 .dish-photo { padding: 11px 11px 24px; border: 1px solid #d5dee9; background: #fff; }
 .dish-art { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1402 / 1122; }
@@ -213,6 +211,12 @@ body.home-mode { background-color: #fff9f7; }
 .result-tip h2 { display: inline-block; margin: 0 0 10px; padding: 3px 12px; border: 1px solid #ec9da8; border-radius: 999px; background: #fff0f1; }
 .result-flavor { position: relative; padding: 14px 17px 16px; border-left: 3px solid #edce63; border-radius: 3px 3px 14px 3px; background: #fff1ba; box-shadow: 2px 3px 0 #e9d88755; }
 .result-flavor::after { content: ""; position: absolute; top: 0; right: 0; width: 0; height: 0; border-style: solid; border-width: 0 17px 17px 0; border-color: transparent #fffefa transparent transparent; }
+.result-explainer { margin-top: 25px; padding: 14px 15px 15px; border: 1px solid #9fb0c5; border-radius: 8px; background: linear-gradient(#fffefaeb, #fffefaeb), repeating-linear-gradient(0deg, #fce0e4 0 12px, #fff 12px 24px); color: var(--navy); }
+.result-explainer h2 { margin: 0 0 10px; padding-bottom: 7px; border-bottom: 1px solid #e5a1aa; color: var(--red); font-size: 1rem; }
+.result-explainer dl { display: grid; gap: 7px; margin: 0; }
+.result-explainer dl > div { display: grid; grid-template-columns: minmax(5.4em, auto) 1fr; gap: 8px; align-items: baseline; font-size: .84rem; line-height: 1.55; }
+.result-explainer dt { font-weight: 800; white-space: nowrap; }
+.result-explainer dd { margin: 0; }
 .result-actions { display: grid; gap: 11px; margin-top: 21px; }
 
 .share-heading { margin: 0 0 15px; font-size: clamp(1.38rem, 5.7vw, 1.85rem); line-height: 1.4; text-align: center; }
