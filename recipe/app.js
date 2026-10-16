@@ -444,6 +444,16 @@ function fitLines(ctx, text, maxWidth, maxHeight, startSize, minSize, weight, li
   }
   throw new Error("カードの原稿が所定の領域に収まりません。配置を調整してください。");
 }
+function drawCenteredBodyLines(ctx, layout, x, y) {
+  const previousAlign = ctx.textAlign;
+  const previousBaseline = ctx.textBaseline;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `700 ${layout.size}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+  layout.lines.forEach((line, index) => ctx.fillText(line, x, y + (index - (layout.lines.length - 1) / 2) * layout.lineHeight));
+  ctx.textAlign = previousAlign;
+  ctx.textBaseline = previousBaseline;
+}
 function drawResultSeal(ctx, result) {
   const x = 1015, y = 385, radius = 133;
   const topLines = [result.sealTop.replace(/まで$/, ""), "まで"];
@@ -554,11 +564,11 @@ async function drawCard(result) {
       F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
     }[result.type];
     if (!summaryLines || summaryLines.join("") !== result.description) throw new Error("総評の改行位置を確認してください");
-    const description = fitLines(ctx, summaryLines.join("\n"), 850, 144, 42, 38, 700, 1.34);
+    const description = fitLines(ctx, summaryLines.join("\n"), 790, 144, 39, 35, 700, 1.34);
     if (description.lines.length !== 2) throw new Error("総評が2行に収まりません");
     ctx.fillStyle = "#082856";
     description.lines.forEach((line, index) => ctx.fillText(line, 112, 1014 + index * description.lineHeight));
-    drawContained(ctx, chef, 931, 869, 254, 250);
+    drawContained(ctx, chef, 866, 869, 254, 250);
 
     roundedRect(ctx, 42, 1137, 711, 112, 8, "#fffdfb", "#8ba0b8", 2);
     ctx.fillStyle = "#ec183d";
@@ -566,7 +576,7 @@ async function drawCard(result) {
     drawRedPillLabel(ctx, "主成分", 54, 1144, 145, 39, 26);
     const ingredients = fitLines(ctx, result.ingredients, 640, 45, 34, 28, 700, 1.2);
     ctx.fillStyle = "#082856";
-    ingredients.lines.forEach((line, index) => ctx.fillText(line, 94, 1230 + index * ingredients.lineHeight));
+    drawCenteredBodyLines(ctx, ingredients, 397.5, 1216);
     roundedRect(ctx, 42, 1259, 711, 165, 8, "#fffafb", "#ec9da8", 2);
     roundedRect(ctx, 54, 1267, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";
@@ -575,7 +585,7 @@ async function drawCard(result) {
     const tipText = result.tip.replace("、", "、\n");
     const tip = fitLines(ctx, tipText, 640, 105, 32, 26, 700, 1.25);
     ctx.fillStyle = "#082856";
-    tip.lines.forEach((line, index) => ctx.fillText(line, 94, 1348 + index * tip.lineHeight));
+    drawCenteredBodyLines(ctx, tip, 397.5, 1365);
 
     roundedRect(ctx, 779, 1137, 379, 165, 5, "#fff1ba", null);
     ctx.fillStyle = "#fffefa";
