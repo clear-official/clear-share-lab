@@ -32,7 +32,7 @@ function validContent() {
       && question.answers.every((answer) => typeof answer.text === "string" && answer.text.trim() && types.has(answer.type)))
     && CONTENT.results.every((result) => result.image && result.name?.trim() && result.ingredients?.trim()
       && result.description?.trim() && result.tip?.trim() && result.hiddenFlavorText?.trim()
-      && result.sealTop?.trim() && result.sealBottom?.trim());
+      && result.seal?.trim());
 }
 
 const READY = validContent();
@@ -114,10 +114,27 @@ function resultNameParts(result) {
   return [chars.slice(0, index).join(""), chars.slice(index).join("")];
 }
 function resultNameMarkup(result) {
-  return resultNameParts(result).map((part) => {
+  const lines = resultNameParts(result).map((part, index) => {
     const text = escapeHtml(part);
-    return `<span class="result-title-line" data-text="${text}"><span class="result-title-face">${text}</span></span>`;
+    const y = 53 + index * 65;
+    const markerWidth = Array.from(part).length * 48 + 28;
+    return `<line x1="${300 - markerWidth / 2}" y1="${y - 11}" x2="${300 + markerWidth / 2}" y2="${y - 11}" stroke="#ffe16b" stroke-width="18" stroke-linecap="round"/>
+      <text x="300" y="${y}" fill="#082856" stroke="#082856" stroke-width="17" stroke-linejoin="round" paint-order="stroke fill">${text}</text>
+      <text x="300" y="${y}" fill="#082856" stroke="#fff" stroke-width="11" stroke-linejoin="round" paint-order="stroke fill">${text}</text>`;
   }).join("");
+  return `<svg class="result-title-svg" viewBox="0 0 600 144" aria-hidden="true"><g text-anchor="middle" font-family="Recipe Maru, Hiragino Maru Gothic ProN, Meiryo, sans-serif" font-size="48" font-weight="900">${lines}</g></svg>`;
+}
+function sealLines(result) {
+  const lines = {
+    A: ["思いついたら", "すぐに", "試してみる"],
+    B: ["気になったら", "すぐに", "詳しく調べる"],
+    C: ["変化に気づいたら", "すぐに", "声をかける"],
+    D: ["条件を", "確認してから", "動き出す"],
+    E: ["予定が変わったら", "すぐに", "切り替え"],
+    F: ["少しずつ、", "じっくり", "積み重ねる"],
+  }[result.type];
+  if (!lines || lines.join("") !== result.seal) throw new Error("丸い欄の文言を確認してください");
+  return lines;
 }
 function shell(body, back = "", variant = "") {
   return `<section class="paper${variant ? ` ${variant}` : ""}"><div class="topline"><span class="brand">Clear シェアラボ</span>${back ? `<button class="back" data-action="back" data-target="${back}">← 戻る</button>` : ""}</div>${body}</section>`;
@@ -191,12 +208,16 @@ function quizView(index) {
     <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${QUIZ_CHEF_IMAGE}" alt="調味料をフライパンに振るリアちゃん" width="1230" height="1278">${seasoningMarkup()}</div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }
 function resultView(result) {
+  const ingredientMarkup = result.type === "F"
+    ? escapeHtml(result.ingredients).replace("／", "／<br>")
+    : escapeHtml(result.ingredients);
   return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
-    <div class="dish-frame"><div class="dish-photo"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
-    <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${escapeHtml(result.ingredients)}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
+    <div class="dish-frame"><div class="dish-photo"><div class="result-cover-head"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-seal" aria-label="${escapeHtml(result.seal)}"><span class="result-seal-text">${sealLines(result).map(escapeHtml).join("<br>")}</span></div></div><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
+    <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${ingredientMarkup}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
     <section class="result-section result-flavor"><h2>隠し味</h2><p>${escapeHtml(result.hiddenFlavor)}</p></section>
+    <section class="result-explainer" aria-labelledby="result-explainer-title"><h2 id="result-explainer-title">結果の見方</h2><dl><div><dt>丸い欄</dt><dd>回答から見えた、行動の始め方や進め方です。</dd></div><div><dt>総評</dt><dd>診断で最も強く出たタイプの特徴です。</dd></div><div><dt>主成分</dt><dd>そのタイプの中心になる強みです。</dd></div><div><dt>おいしくなるコツ</dt><dd>その強みを活かすためのヒントです。</dd></div><div><dt>隠し味</dt><dd>診断で２番目に強く出たタイプの特徴です。</dd></div></dl></section>
     <div class="result-actions"><button class="primary" data-action="share-page">ポイント獲得方法はコチラ</button><button class="secondary" data-action="restart">もう一度診断する</button></div><div class="result-band result-band-bottom" aria-hidden="true"></div>`, "q-7", "result-paper");
 }
 function shareText(result) {
@@ -216,10 +237,10 @@ function shareView(result) {
       <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p></details>
     <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-cover.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="330" height="140"></h2><ol>
       <li><span class="step-number">1</span><span>診断結果のカード画像と「${HASHTAG}」を付けてSNSに投稿</span></li>
-      <li><span class="step-number">2</span><span>投稿先と投稿内容が分かる、画面全体のスクリーンショットを撮影</span></li>
+      <li><span class="step-number">2</span><span>画面全体のスクリーンショットを撮影。<strong>スクリーンショットは切り取らないでください。</strong><span class="reward-capture-note">投稿・送信したアカウント名、投稿先または送信先の名前、投稿・送信内容、カード画像が画面内で分かるようにしてください。</span></span></li>
       <li><span class="step-number">3</span><span>スクリーンショットを問い合わせ窓口へ送信</span></li>
       <li><span class="step-number">4</span><span>運営側が確認後、100ptを加算</span></li>
-    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small">※ポイントの受け取りはお一人様1回までです。</p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small">※確認状況により、ポイント加算が翌日になる場合があります。</p></section>`, "result");
+    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small"><span>※ポイントの受け取りは</span><span>お1人様1回までです。</span></p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small"><span>※確認状況により、</span><span>ポイント加算が</span><span>翌日になる場合があります。</span></p></section>`, "result");
 }
 
 function render() {
@@ -228,6 +249,7 @@ function render() {
   navigationLocked = false;
   const page = route();
   document.body.classList.toggle("home-mode", page.screen === "home");
+  document.body.classList.toggle("quiz-mode", page.screen === "quiz");
   if (!READY && page.screen !== "home") { navigate("home", true); return; }
   if (!page.preview && page.screen === "quiz" && page.index > 0 && state.answers.slice(0, page.index).some((answer) => answer === null)) {
     const first = state.answers.findIndex((answer) => answer === null);
@@ -330,6 +352,22 @@ function roundedRect(ctx, x, y, width, height, radius, fill, stroke, lineWidth =
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth; ctx.stroke(); }
 }
+function drawRedPillLabel(ctx, label, x, y, width, height, fontSize) {
+  roundedRect(ctx, x, y, width, height, height / 2, "#ec183d", "#ec183d");
+  const previousAlign = ctx.textAlign;
+  const previousBaseline = ctx.textBaseline;
+  const previousFill = ctx.fillStyle;
+  const previousFont = ctx.font;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${fontSize}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+  ctx.fillText(label, x + width / 2, y + height / 2);
+  ctx.textAlign = previousAlign;
+  ctx.textBaseline = previousBaseline;
+  ctx.fillStyle = previousFill;
+  ctx.font = previousFont;
+}
 function drawGingham(ctx, background, y, height) {
   for (let x = 0; x < 1200; x += 700) {
     const width = Math.min(700, 1200 - x);
@@ -410,9 +448,55 @@ function fitLines(ctx, text, maxWidth, maxHeight, startSize, minSize, weight, li
   }
   throw new Error("カードの原稿が所定の領域に収まりません。配置を調整してください。");
 }
-function drawCenteredLines(ctx, layout, x, top) {
+function fitExactLines(ctx, lines, maxWidth, startSize, minSize, weight, lineFactor) {
+  for (let size = startSize; size >= minSize; size -= 1) {
+    ctx.font = `${weight} ${size}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+    if (lines.every((line) => ctx.measureText(line).width <= maxWidth)) {
+      return { lines, size, lineHeight: size * lineFactor };
+    }
+  }
+  throw new Error("カードの2行原稿が枠に収まりません");
+}
+function drawCenteredBodyLines(ctx, layout, x, y) {
+  const previousAlign = ctx.textAlign;
+  const previousBaseline = ctx.textBaseline;
   ctx.textAlign = "center";
-  layout.lines.forEach((line, index) => ctx.fillText(line, x, top + index * layout.lineHeight));
+  ctx.textBaseline = "middle";
+  ctx.font = `700 ${layout.size}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
+  layout.lines.forEach((line, index) => ctx.fillText(line, x, y + (index - (layout.lines.length - 1) / 2) * layout.lineHeight));
+  ctx.textAlign = previousAlign;
+  ctx.textBaseline = previousBaseline;
+}
+function drawResultSeal(ctx, result) {
+  const x = 1031, y = 385, radius = 150;
+  const lines = sealLines(result);
+  const lineHeight = 37;
+  const centers = lines.map((_, index) => y + (index - (lines.length - 1) / 2) * lineHeight);
+  const fitSize = () => {
+    for (let size = 34; size >= 30; size--) {
+      ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
+      if (lines.every((line, index) => {
+        const edge = Math.abs(centers[index] - y) + size * .58;
+        const halfWidth = Math.sqrt(radius * radius - edge * edge) - 18;
+        return ctx.measureText(line).width / 2 <= halfWidth;
+      })) return size;
+    }
+    throw new Error("丸い欄の文字が円内に収まりません");
+  };
+  const size = fitSize();
+
+  ctx.save();
+  ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff"; ctx.fill();
+  ctx.strokeStyle = "#183d70"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, radius - 10, 0, Math.PI * 2);
+  ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = "#082856";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
+  lines.forEach((line, index) => ctx.fillText(line, x, centers[index]));
+  ctx.restore();
 }
 async function drawCard(result) {
   const canvas = document.querySelector("#recipe-card");
@@ -423,6 +507,7 @@ async function drawCard(result) {
       loadImage(result.image), loadImage(CHEF_IMAGE), loadImage(TITLE_IMAGE), loadImage(BACKGROUND_IMAGE),
     ]);
     if (!canvas.isConnected) return;
+    await document.fonts?.load('900 76px "Recipe Maru"', result.name);
     await document.fonts?.ready;
     if (!canvas.isConnected) return;
     const ctx = canvas.getContext("2d");
@@ -431,11 +516,11 @@ async function drawCard(result) {
     drawGingham(ctx, background, 0, 56);
     drawGingham(ctx, background, 1444, 56);
     drawContained(ctx, title, 380, 64, 440, 110);
-    roundedRect(ctx, 42, 183, 1116, 715, 14, "#082856", "#183d70", 4);
-    roundedRect(ctx, 76, 197, 1048, 686, 3, "#fff", "#d5dfe9", 2);
+    roundedRect(ctx, 42, 183, 1116, 945, 14, "#082856", "#183d70", 4);
+    roundedRect(ctx, 76, 197, 1048, 917, 3, "#fff", "#d5dfe9", 2);
     ctx.textAlign = "center";
     const nameParts = resultNameParts(result);
-    ctx.font = '900 76px "Meiryo", sans-serif';
+    ctx.font = '900 76px "Recipe Maru", "Hiragino Maru Gothic ProN", "Meiryo", sans-serif';
     nameParts.forEach((line, index) => {
       const y = 292 + index * 80;
       const markerWidth = Math.min(940, ctx.measureText(line).width + 28);
@@ -448,10 +533,10 @@ async function drawCard(result) {
       ctx.stroke();
       ctx.lineJoin = "round";
       ctx.strokeStyle = "#082856";
-      ctx.lineWidth = 23;
+      ctx.lineWidth = 18;
       ctx.strokeText(line, 600, y);
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 17;
+      ctx.lineWidth = 13;
       ctx.strokeText(line, 600, y);
       ctx.fillStyle = "#082856";
       ctx.fillText(line, 600, y);
@@ -467,80 +552,41 @@ async function drawCard(result) {
     drawContained(ctx, image, 113, 380, 974, 470);
     ctx.restore();
 
-    // Place the larger seal in the photo's upper-right opening.
-    ctx.beginPath(); ctx.arc(1015, 337, 133, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff"; ctx.fill();
-    ctx.strokeStyle = "#183d70"; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath(); ctx.arc(1015, 337, 123, 0, Math.PI * 2);
-    ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
-    const sealTop = { lines: result.sealTop.replace(/まで$/, "\nまで").split("\n"), lineHeight: 37 };
-    const sealBottomLines = {
-      A: ["思いついたら", "すぐ"],
-      B: ["気になったら", "あっという間"],
-      C: ["変化に気づいた", "そのとき"],
-      D: ["段取りが", "整ってから"],
-      E: ["予定が変わった", "その場で"],
-      F: ["コトコト、", "じっくり"],
-    }[result.type];
-    if (!sealBottomLines || sealBottomLines.join("") !== result.sealBottom) throw new Error("丸い欄の文言を確認してください");
-    const sealBottom = { lines: sealBottomLines, lineHeight: 37 };
-    ctx.fillStyle = "#082856";
-    ctx.font = '800 32px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    drawCenteredLines(ctx, sealTop, 1015, 270);
-    ctx.beginPath();
-    for (let x = 940; x <= 1090; x += 4) {
-      const y = 329 + Math.sin((x - 940) * Math.PI / 12) * 2.5;
-      if (x === 940) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.strokeStyle = "#849bbb";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    const sealBottomSize = Math.max(...sealBottom.lines.map((line) => Array.from(line).length)) >= 7 ? 28 : 30;
-    ctx.font = `800 ${sealBottomSize}px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif`;
-    drawCenteredLines(ctx, sealBottom, 1015, 376);
-
-    roundedRect(ctx, 42, 916, 1116, 203, 10, "#fff", "#183d70", 2);
-    roundedRect(ctx, 51, 924, 1098, 187, 7, null, "#dce6f0", 2);
-    roundedRect(ctx, 72, 905, 120, 43, 20, "#ec183d", "#ec183d", 2);
-    ctx.fillStyle = "#fff";
+    roundedRect(ctx, 76, 910, 1048, 200, 10, "#fff", "#183d70", 2);
+    roundedRect(ctx, 85, 918, 1030, 184, 7, null, "#dce6f0", 2);
     ctx.textAlign = "left";
-    ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("総評", 89, 936);
+    drawRedPillLabel(ctx, "総評", 106, 923, 120, 42, 28);
     const summaryLines = {
-      A: ["思いついたら、まず一歩。動きながら", "「これでいこう」を見つけていく人です。"],
-      B: ["気になるものは、詳しく知るほど楽しくなる。", "好きなことから自分らしさが広がります。"],
-      C: ["相手の希望や困ることに目が向く人。", "みんなが心地よく過ごせる形を探せます。"],
-      D: ["時間や条件を確かめて、次に必要なことを", "考えられる人。準備が整うほど力を発揮します。"],
-      E: ["予定どおりにいかなくても、手元に", "あるものから別の道を見つけられる人です。"],
-      F: ["急がず、できるところから重ねていく人。", "時間をかけて自分らしい仕上がりを育てます。"],
+      A: ["思いついたことを、まず試してみる人。", "動きながら、自分に合うやり方を見つけます。"],
+      B: ["気になることを、自分で詳しく調べる人。", "知るほど興味が深まり、楽しみが広がります。"],
+      C: ["相手の希望や困りごとに気づける人。", "話を聞きながら、相手に合う方法を考えます。"],
+      D: ["時間や予算などを先に確認し、進め方を考える人。", "必要な準備を整えてから行動できます。"],
+      E: ["予定どおりにいかないときも、今あるものを使って", "別の方法を考えられる人です。"],
+      F: ["急がず、自分のペースで続ける人。", "少しずつ経験を重ね、できることを増やしていきます。"],
     }[result.type];
     if (!summaryLines || summaryLines.join("") !== result.description) throw new Error("総評の改行位置を確認してください");
-    const description = fitLines(ctx, summaryLines.join("\n"), 865, 144, 39, 39, 700, 1.34);
+    const description = fitExactLines(ctx, summaryLines, 790, 39, 30, 700, 1.34);
     if (description.lines.length !== 2) throw new Error("総評が2行に収まりません");
     ctx.fillStyle = "#082856";
-    description.lines.forEach((line, index) => ctx.fillText(line, 80, 1005 + index * description.lineHeight));
-    drawContained(ctx, chef, 931, 869, 254, 250);
+    description.lines.forEach((line, index) => ctx.fillText(line, 112, 1014 + index * description.lineHeight));
+    drawContained(ctx, chef, 866, 869, 254, 250);
 
     roundedRect(ctx, 42, 1137, 711, 112, 8, "#fffdfb", "#8ba0b8", 2);
     ctx.fillStyle = "#ec183d";
     ctx.fillRect(42, 1147, 5, 91);
-    roundedRect(ctx, 54, 1144, 145, 39, 19, "#ec183d", "#ec183d", 2);
-    ctx.fillStyle = "#fff";
-    ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
-    ctx.fillText("主成分", 68, 1172);
+    drawRedPillLabel(ctx, "主成分", 54, 1144, 145, 39, 26);
     const ingredients = fitLines(ctx, result.ingredients, 640, 45, 34, 28, 700, 1.2);
     ctx.fillStyle = "#082856";
-    ingredients.lines.forEach((line, index) => ctx.fillText(line, 94, 1230 + index * ingredients.lineHeight));
+    drawCenteredBodyLines(ctx, ingredients, 397.5, 1208);
     roundedRect(ctx, 42, 1259, 711, 165, 8, "#fffafb", "#ec9da8", 2);
     roundedRect(ctx, 54, 1267, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";
     ctx.font = '800 26px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("おいしくなるコツ", 68, 1295);
     const tipText = result.tip.replace("、", "、\n");
-    const tip = fitLines(ctx, tipText, 640, 105, 32, 26, 700, 1.08);
+    const tip = fitLines(ctx, tipText, 640, 105, 32, 26, 700, 1.25);
     ctx.fillStyle = "#082856";
-    tip.lines.forEach((line, index) => ctx.fillText(line, 94, 1350 + index * tip.lineHeight));
+    drawCenteredBodyLines(ctx, tip, 397.5, 1365);
 
     roundedRect(ctx, 779, 1137, 379, 165, 5, "#fff1ba", null);
     ctx.fillStyle = "#fffefa";
@@ -549,9 +595,10 @@ async function drawCard(result) {
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("隠し味", 805, 1175);
     const flavorText = ({
+      "思いついたことをすぐ試す行動力": "思いついたことを\nすぐ試す行動力",
       "気になることを掘り下げる好奇心": "気になることを\n掘り下げる好奇心",
-      "相手の希望に目を向ける気づかい": "相手の希望に\n目を向ける気づかい",
-      "条件を確かめて整える視点": "条件を確かめて\n整える視点",
+      "相手の希望を確かめる気づかい": "相手の希望を\n確かめる気づかい",
+      "条件を確かめて段取りを考える力": "条件を確かめて\n段取りを考える力",
       "別の方法を見つける柔軟さ": "別の方法を\n見つける柔軟さ",
       "自分のペースで続ける粘り強さ": "自分のペースで\n続ける粘り強さ",
     })[result.hiddenFlavor] || result.hiddenFlavor;
@@ -567,6 +614,8 @@ async function drawCard(result) {
     ctx.textAlign = "right";
     ctx.font = '800 36px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText(HASHTAG, 1148, 1392);
+    // Draw the seal last so the dish, frame, title, and decorations cannot cover it.
+    drawResultSeal(ctx, result);
     canvas.toBlob((blob) => {
       if (!blob || !canvas.isConnected) return;
       cardPngBlob = blob;
