@@ -119,6 +119,18 @@ function resultNameMarkup(result) {
     return `<span class="result-title-line" data-text="${text}"><span class="result-title-face">${text}</span></span>`;
   }).join("");
 }
+function sealBottomLines(result) {
+  const lines = {
+    A: ["思いついたら", "すぐ"],
+    B: ["気になったら", "あっという間"],
+    C: ["変化に気づいた", "そのとき"],
+    D: ["段取りが", "整ってから"],
+    E: ["予定が変わった", "その場で"],
+    F: ["コトコト、", "じっくり"],
+  }[result.type];
+  if (!lines || lines.join("") !== result.sealBottom) throw new Error("丸い欄の文言を確認してください");
+  return lines;
+}
 function shell(body, back = "", variant = "") {
   return `<section class="paper${variant ? ` ${variant}` : ""}"><div class="topline"><span class="brand">Clear シェアラボ</span>${back ? `<button class="back" data-action="back" data-target="${back}">← 戻る</button>` : ""}</div>${body}</section>`;
 }
@@ -192,7 +204,7 @@ function quizView(index) {
 }
 function resultView(result) {
   return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
-    <div class="dish-frame"><div class="dish-photo"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
+    <div class="dish-frame"><div class="dish-photo"><div class="result-cover-head"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-seal" aria-label="${escapeHtml(result.sealTop)}、${escapeHtml(result.sealBottom)}"><span class="result-seal-top">${escapeHtml(result.sealTop.replace(/まで$/, ""))}<br>まで</span><span class="result-seal-divider" aria-hidden="true"></span><span class="result-seal-bottom">${sealBottomLines(result).map(escapeHtml).join("<br>")}</span></div></div><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
     <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${escapeHtml(result.ingredients)}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
@@ -216,10 +228,10 @@ function shareView(result) {
       <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p></details>
     <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-cover.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="330" height="140"></h2><ol>
       <li><span class="step-number">1</span><span>診断結果のカード画像と「${HASHTAG}」を付けてSNSに投稿</span></li>
-      <li><span class="step-number">2</span><span>投稿先と投稿内容が分かる、画面全体のスクリーンショットを撮影</span></li>
+      <li><span class="step-number">2</span><span>画面全体のスクリーンショットを撮影。<strong>スクリーンショットは切り取らないでください。</strong><span class="reward-capture-note">投稿・送信したアカウント名、投稿先または送信先の名前、投稿・送信内容、カード画像が画面内で分かるようにしてください。</span></span></li>
       <li><span class="step-number">3</span><span>スクリーンショットを問い合わせ窓口へ送信</span></li>
       <li><span class="step-number">4</span><span>運営側が確認後、100ptを加算</span></li>
-    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small">※ポイントの受け取りはお一人様1回までです。</p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small">※確認状況により、ポイント加算が翌日になる場合があります。</p></section>`, "result");
+    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small"><span>※ポイントの受け取りは</span><span>お1人様1回までです。</span></p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small"><span>※確認状況により、</span><span>ポイント加算が</span><span>翌日になる場合があります。</span></p></section>`, "result");
 }
 
 function render() {
@@ -228,6 +240,7 @@ function render() {
   navigationLocked = false;
   const page = route();
   document.body.classList.toggle("home-mode", page.screen === "home");
+  document.body.classList.toggle("quiz-mode", page.screen === "quiz");
   if (!READY && page.screen !== "home") { navigate("home", true); return; }
   if (!page.preview && page.screen === "quiz" && page.index > 0 && state.answers.slice(0, page.index).some((answer) => answer === null)) {
     const first = state.answers.findIndex((answer) => answer === null);
@@ -474,16 +487,7 @@ async function drawCard(result) {
     ctx.beginPath(); ctx.arc(1015, 337, 123, 0, Math.PI * 2);
     ctx.setLineDash([3, 6]); ctx.lineWidth = 3; ctx.stroke(); ctx.setLineDash([]);
     const sealTop = { lines: result.sealTop.replace(/まで$/, "\nまで").split("\n"), lineHeight: 37 };
-    const sealBottomLines = {
-      A: ["思いついたら", "すぐ"],
-      B: ["気になったら", "あっという間"],
-      C: ["変化に気づいた", "そのとき"],
-      D: ["段取りが", "整ってから"],
-      E: ["予定が変わった", "その場で"],
-      F: ["コトコト、", "じっくり"],
-    }[result.type];
-    if (!sealBottomLines || sealBottomLines.join("") !== result.sealBottom) throw new Error("丸い欄の文言を確認してください");
-    const sealBottom = { lines: sealBottomLines, lineHeight: 37 };
+    const sealBottom = { lines: sealBottomLines(result), lineHeight: 37 };
     ctx.fillStyle = "#082856";
     ctx.font = '800 32px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     drawCenteredLines(ctx, sealTop, 1015, 270);
@@ -549,6 +553,7 @@ async function drawCard(result) {
     ctx.font = '800 28px "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif';
     ctx.fillText("隠し味", 805, 1175);
     const flavorText = ({
+      "まず試してみる軽やかさ": "まず試してみる\n軽やかさ",
       "気になることを掘り下げる好奇心": "気になることを\n掘り下げる好奇心",
       "相手の希望に目を向ける気づかい": "相手の希望に\n目を向ける気づかい",
       "条件を確かめて整える視点": "条件を確かめて\n整える視点",

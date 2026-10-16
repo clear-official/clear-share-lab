@@ -181,14 +181,17 @@ for (const [type, choices] of examples) {
   assert.equal(site.location.hash, "#result");
   const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.id === data.resolveHiddenFlavor(choices));
-  for (const copy of [result.name, result.image, result.ingredients, result.description, result.tip, flavor.hiddenFlavorText]) {
+  for (const copy of [result.name, result.image, result.ingredients, result.description, result.tip, result.sealTop, flavor.hiddenFlavorText]) {
     assert.ok(site.app.innerHTML.includes(copy), `結果画面の内容: ${type} ${copy}`);
   }
+  assert.ok(site.app.innerHTML.includes('class="result-seal"'), `丸い欄: ${type}`);
   await site.click("share-page");
   assert.equal(site.location.hash, "#share");
   assert.match(site.app.innerHTML, /width="1200" height="1500"/);
   assert.match(site.app.innerHTML, /#CLEARシェアラボ/);
   assert.match(site.app.innerHTML, /運営側が確認後、100ptを加算/);
+  assert.match(site.app.innerHTML, /スクリーンショットは切り取らないでください/);
+  assert.match(site.app.innerHTML, /投稿・送信したアカウント名/);
 }
 
 for (const type of types) {
@@ -234,6 +237,7 @@ for (const type of types) {
   assert.ok(card.drawnText.some(({ text, x, y }) => text === "隠し味" && x === 805 && y === 1175), `隠し味の見出し位置: ${type}`);
   const flavorLines = card.drawnText.filter(({ x, y }) => x === 968.5 && y >= 1200 && y <= 1302);
   assert.equal(flavorLines.map(({ text }) => text).join(""), flavor.hiddenFlavorText, `隠し味の本文: ${type}`);
+  assert.ok(flavorLines.length <= 2 && flavorLines.every(({ text }) => Array.from(text).length > 1), `隠し味の一文字改行なし: ${type}`);
   assert.equal(flavorLines.reduce((sum, { y }) => sum + y, 0) / flavorLines.length, 1233, `隠し味の縦中央: ${type}`);
   assert.equal(card.drawnText.find(({ text }) => text === "#CLEARシェアラボ")?.fillStyle, "#082856", `ハッシュタグの色: ${type}`);
   assert.ok(card.drawnText.every(({ x, y }) => x >= 0 && x <= 1200 && y >= 0 && y <= 1500));
@@ -244,6 +248,7 @@ for (const flavorType of types) {
   await new Promise((resolve) => setImmediate(resolve));
   const flavorLines = card.drawnText.filter(({ x, y }) => x === 968.5 && y >= 1200 && y <= 1302);
   assert.equal(flavorLines.map(({ text }) => text).join(""), data.results.find(({ type }) => type === flavorType).hiddenFlavorText, `隠し味6種類: ${flavorType}`);
+  assert.ok(flavorLines.length <= 2 && flavorLines.every(({ text }) => Array.from(text).length > 1), `隠し味6種類の一文字改行なし: ${flavorType}`);
   assert.equal(flavorLines.reduce((sum, { y }) => sum + y, 0) / flavorLines.length, 1233, `隠し味6種類の縦中央: ${flavorType}`);
 }
 for (let index = 1; index <= 7; index += 1) {
