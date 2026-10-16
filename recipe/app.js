@@ -576,7 +576,7 @@ async function drawCard(result) {
     drawRedPillLabel(ctx, "主成分", 54, 1144, 145, 39, 26);
     const ingredients = fitLines(ctx, result.ingredients, 640, 45, 34, 28, 700, 1.2);
     ctx.fillStyle = "#082856";
-    drawCenteredBodyLines(ctx, ingredients, 397.5, 1216);
+    drawCenteredBodyLines(ctx, ingredients, 397.5, 1196);
     roundedRect(ctx, 42, 1259, 711, 165, 8, "#fffafb", "#ec9da8", 2);
     roundedRect(ctx, 54, 1267, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";

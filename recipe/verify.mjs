@@ -242,9 +242,9 @@ for (const type of types) {
     const drawn = card.drawnText.find((entry) => entry.text === label);
     assert.ok(drawn && drawn.x === x && drawn.y === y && drawn.textAlign === "center" && drawn.textBaseline === "middle", `赤いラベル内の中央配置: ${type} ${label}`);
   }
-  const ingredientLines = card.drawnText.filter(({ x, y }) => x === 397.5 && y >= 1190 && y <= 1245);
+  const ingredientLines = card.drawnText.filter(({ x, y }) => x === 397.5 && y >= 1170 && y <= 1225);
   assert.equal(ingredientLines.map(({ text }) => text).join(""), result.ingredients, `主成分の本文を中央配置: ${type}`);
-  assert.ok(ingredientLines.every(({ y, textAlign, textBaseline }) => y === 1216 && textAlign === "center" && textBaseline === "middle"), `主成分の上下左右中央: ${type}`);
+  assert.ok(ingredientLines.every(({ y, textAlign, textBaseline }) => y === 1196 && textAlign === "center" && textBaseline === "middle"), `主成分の中央揃えと上方向の調整: ${type}`);
   const tipLines = card.drawnText.filter(({ x, y }) => x === 397.5 && y >= 1320 && y <= 1410);
   assert.equal(tipLines.length, 2, `おいしくなるコツの2行: ${type}`);
   assert.equal(tipLines.map(({ text }) => text).join(""), result.tip, `おいしくなるコツの文言: ${type}`);
