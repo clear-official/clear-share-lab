@@ -126,12 +126,12 @@ function resultNameMarkup(result) {
 }
 function sealLines(result) {
   const lines = {
-    A: ["思いついたら", "即行動"],
-    B: ["気になったら", "すぐ調べる"],
-    C: ["変化に気づいたら", "すぐ声かけ"],
-    D: ["条件を確認してから", "動き出す"],
-    E: ["予定が変わったら", "すぐに切り替え"],
-    F: ["少しずつ、", "じっくり積み重ねる"],
+    A: ["思いついたら", "すぐに", "行動"],
+    B: ["気になったら", "すぐに", "調べる"],
+    C: ["変化に気づいたら", "すぐに", "声かけ"],
+    D: ["条件を", "確認してから", "動き出す"],
+    E: ["予定が変わったら", "すぐに", "切り替え"],
+    F: ["少しずつ、", "じっくり", "積み重ねる"],
   }[result.type];
   if (!lines || lines.join("") !== result.seal) throw new Error("丸い欄の文言を確認してください");
   return lines;
@@ -468,12 +468,12 @@ function drawCenteredBodyLines(ctx, layout, x, y) {
   ctx.textBaseline = previousBaseline;
 }
 function drawResultSeal(ctx, result) {
-  const x = 1015, y = 385, radius = 133;
+  const x = 1031, y = 385, radius = 150;
   const lines = sealLines(result);
-  const lineHeight = 35;
+  const lineHeight = 37;
   const centers = lines.map((_, index) => y + (index - (lines.length - 1) / 2) * lineHeight);
   const fitSize = () => {
-    for (let size = 32; size >= 22; size--) {
+    for (let size = 34; size >= 30; size--) {
       ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
       if (lines.every((line, index) => {
         const edge = Math.abs(centers[index] - y) + size * .58;
@@ -562,7 +562,7 @@ async function drawCard(result) {
       C: ["相手の希望や困りごとに気づける人。", "話を聞きながら、相手に合う方法を考えます。"],
       D: ["時間や予算などを先に確認し、進め方を考える人。", "必要な準備を整えてから行動できます。"],
       E: ["予定どおりにいかないときも、今あるものを使って", "別の方法を考えられる人です。"],
-      F: ["急がず、自分のペースで続ける人。少しずつ", "経験を重ね、できることを増やしていきます。"],
+      F: ["急がず、自分のペースで続ける人。", "少しずつ経験を重ね、できることを増やしていきます。"],
     }[result.type];
     if (!summaryLines || summaryLines.join("") !== result.description) throw new Error("総評の改行位置を確認してください");
     const description = fitExactLines(ctx, summaryLines, 790, 39, 30, 700, 1.34);
@@ -577,7 +577,7 @@ async function drawCard(result) {
     drawRedPillLabel(ctx, "主成分", 54, 1144, 145, 39, 26);
     const ingredients = fitLines(ctx, result.ingredients, 640, 45, 34, 28, 700, 1.2);
     ctx.fillStyle = "#082856";
-    drawCenteredBodyLines(ctx, ingredients, 397.5, 1216);
+    drawCenteredBodyLines(ctx, ingredients, 397.5, 1208);
     roundedRect(ctx, 42, 1259, 711, 165, 8, "#fffafb", "#ec9da8", 2);
     roundedRect(ctx, 54, 1267, 248, 38, 19, "#fff0f1", "#ec9da8", 2);
     ctx.fillStyle = "#ec183d";
