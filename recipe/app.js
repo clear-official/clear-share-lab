@@ -17,6 +17,7 @@ let cardReady = false;
 let cardOpenUrl = null;
 let cardPngBlob = null;
 let toastTimer;
+let shareReturnScrollY = null;
 
 function validContent() {
   const ids = new Set(CONTENT.results.map((result) => result.id));
@@ -221,7 +222,7 @@ function resultView(result) {
     ? escapeHtml(result.ingredients).replace("／", "／<br>")
     : escapeHtml(result.ingredients);
   return shell(`<div class="result-band" aria-hidden="true"></div>${titleMarkup(true)}<div class="result-intro"><img src="${CHEF_IMAGE}" alt="" aria-hidden="true" width="1572" height="2043"><p class="eyebrow">あなたの隠しレシピは…</p></div>
-    <div class="dish-frame"><div class="dish-photo"><div class="result-cover-head"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-seal" aria-label="${escapeHtml(result.seal)}"><span class="result-seal-text">${sealLines(result).map(escapeHtml).join("<br>")}</span></div></div><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
+    <div class="dish-frame"><div class="dish-photo"><div class="result-cover-head"><h1 class="result-title" aria-label="${escapeHtml(result.name)}">${resultNameMarkup(result)}</h1><div class="result-seal${["C", "E"].includes(result.type) ? " result-seal-long" : ""}" aria-label="${escapeHtml(result.seal)}"><span class="result-seal-text">${sealLines(result).map(escapeHtml).join("<br>")}</span></div></div><div class="dish-art"><div class="dish-tabletop" aria-hidden="true"><div class="dish-cloth"></div></div><img src="${escapeHtml(result.image)}" alt="${escapeHtml(result.dish)}" width="1402" height="1122"></div></div></div>
     <section class="result-section result-ingredients"><h2>主成分</h2><p><span class="ingredient-value">${ingredientMarkup}<span class="ingredient-stamp" aria-hidden="true"></span></span></p></section>
     <section class="result-section result-summary"><h2>総評</h2><p>${escapeHtml(result.description)}</p></section>
     <section class="result-section result-tip"><h2>おいしくなるコツ</h2><p>${escapeHtml(result.tip)}</p></section>
@@ -238,8 +239,8 @@ function shareView(result) {
   const line = `https://line.me/R/share?text=${encodeURIComponent(text)}`;
   return shell(`<h1 class="share-heading">レシピカードをシェアしよう</h1>
     <canvas id="recipe-card" class="card-preview" width="1200" height="1500" role="img" aria-label="${escapeHtml(result.name)}のシェア用レシピカード" aria-busy="true"></canvas>
-    <div class="share-actions"><button class="primary" data-action="share-file" disabled>画像付きで共有する</button>
-      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>カード画像を保存</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><button class="share-fallback-link" data-action="save-preview" disabled>保存できない場合はこちら</button></div></div>
+    <div class="share-actions"><button class="primary" data-action="share-file" disabled>画像付きで共有する</button><p class="share-feedback" id="share-feedback" role="status" hidden></p>
+      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>カード画像を保存する</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><button class="share-fallback-link" data-action="save-preview" disabled>保存できない場合はこちら</button></div></div>
     <div class="save-preview" id="save-preview" hidden><p>画像を長押しして保存してください。閉じるとシェア画面に戻ります。</p><img id="save-preview-image" alt="保存用レシピカード"><button class="secondary" data-action="close-save-preview">画像を閉じる</button></div>
     <p class="share-note">共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
     <details class="share-social"><summary>SNSを選んでシェア</summary><div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
@@ -268,6 +269,7 @@ function render() {
   if (cardOpenUrl) { URL.revokeObjectURL(cardOpenUrl); cardOpenUrl = null; }
   cardPngBlob = null;
   cardReady = false;
+  shareReturnScrollY = null;
   const result = page.screen === "result" || page.screen === "share" ? displayedResult(page) : null;
   app.innerHTML = page.screen === "home" ? homeView()
     : page.screen === "quiz" ? quizView(page.index)
@@ -334,7 +336,7 @@ app.addEventListener("click", async (event) => {
   if (action === "restart") { state = emptyState(); saveState(); navigate("home"); return; }
   if (action === "save") { await saveCard(); return; }
   if (action === "save-preview") { showSavePreview(); return; }
-  if (action === "close-save-preview") { document.querySelector("#save-preview").hidden = true; return; }
+  if (action === "close-save-preview") { closeSavePreview(); return; }
   if (action === "share-file") { await shareCard(); return; }
   if (action === "copy") { await copyText(shareText(displayedResult(page))); }
 });
@@ -645,50 +647,64 @@ async function drawCard(result) {
   }
 }
 function showSavePreview() {
-  if (!cardReady || !cardOpenUrl) return;
+  if (!cardReady || !cardOpenUrl) { showShareFeedback("カード画像を準備中です。少し待ってからもう一度お試しください。"); return; }
   const preview = document.querySelector("#save-preview");
+  if (preview.hidden) shareReturnScrollY = window.scrollY;
   preview.hidden = false;
-  preview.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  requestAnimationFrame(() => preview.scrollIntoView({ block: "start", behavior: "smooth" }));
+}
+function closeSavePreview() {
+  document.querySelector("#save-preview").hidden = true;
+  window.scrollTo({ top: shareReturnScrollY ?? 0, behavior: "smooth" });
+  shareReturnScrollY = null;
+}
+function showShareFeedback(message) {
+  const feedback = document.querySelector("#share-feedback");
+  if (!feedback) return;
+  feedback.textContent = message;
+  feedback.hidden = false;
 }
 async function saveCard() {
   try {
     if (!cardReady || !cardPngBlob) throw new Error("カードの準備ができていません");
-    const file = new File([cardPngBlob], `clear-recipe-${displayedResult().id}.png`, { type: "image/png" });
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ title: "私の隠しレシピ診断", files: [file] });
-        return;
-      } catch (error) {
-        if (error.name === "AbortError") return;
-        console.error(error);
-      }
-    }
     if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
       showSavePreview();
-      showToast("画像を長押しして保存してください");
+      showShareFeedback("カード画像を表示しました。画像を長押しして保存してください。");
       return;
     }
     const anchor = document.createElement("a");
     anchor.href = cardOpenUrl;
-    anchor.download = file.name;
+    anchor.download = `clear-recipe-${displayedResult().id}.png`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    showToast("カード画像を保存します");
-  } catch (error) { console.error(error); showToast("画像を保存できませんでした"); }
+    showShareFeedback("カード画像のダウンロードを開始しました。");
+  } catch (error) { console.error(error); showShareFeedback("画像を保存できませんでした。『保存できない場合はこちら』をお試しください。"); }
 }
 async function shareCard() {
   try {
     if (!cardReady || !cardPngBlob) throw new Error("カードの準備ができていません");
     const result = displayedResult();
-    const file = new File([cardPngBlob], `clear-recipe-${result.id}.png`, { type: "image/png" });
-    if (!navigator.canShare?.({ files: [file] })) {
-      await saveCard();
+    if (!window.isSecureContext) {
+      showShareFeedback("この確認用リンクは安全な接続ではないため、画像付き共有を開けません。『カード画像を保存する』から画像を保存してください。");
       return;
     }
+    if (typeof File !== "function") {
+      showShareFeedback("このブラウザでは画像ファイルの共有に対応していません。『カード画像を保存する』から画像を保存してください。");
+      return;
+    }
+    const file = new File([cardPngBlob], `clear-recipe-${result.id}.png`, { type: "image/png" });
+    if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
+      showShareFeedback("このブラウザでは画像付き共有が利用できません。『カード画像を保存する』から画像を保存してください。");
+      return;
+    }
+    showShareFeedback("画像付きの共有画面を開いています…");
     await navigator.share({ title: "私の隠しレシピ診断", text: shareText(result), files: [file] });
+    showShareFeedback("共有画面を閉じました。画像が添付されたか確認してください。");
   } catch (error) {
-    if (error.name !== "AbortError") { console.error(error); showToast("カードを保存し、SNSで画像を添付してください"); }
+    if (error.name === "AbortError") { showShareFeedback("共有をキャンセルしました。『カード画像を保存する』から保存もできます。"); return; }
+    console.error(error);
+    showShareFeedback("画像付き共有を開けませんでした。『カード画像を保存する』から画像を保存し、SNSで添付してください。");
   }
 }
 async function copyText(text) {

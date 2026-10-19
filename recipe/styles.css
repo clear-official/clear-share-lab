@@ -176,9 +176,10 @@ body.home-mode { background-color: #fff9f7; }
 .eyebrow::before { content: ""; position: absolute; top: 50%; left: -8px; width: 14px; height: 14px; transform: translateY(-50%) rotate(45deg); border-left: 2px solid var(--line); border-bottom: 2px solid var(--line); background: #fff; }
 .result-title { width: fit-content; max-width: 100%; margin: 2px auto 8px; padding: 0 6px 2px; color: var(--navy); font-family: "Recipe Maru", "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; font-size: clamp(1.82rem, 8.5vw, 3.1rem); font-weight: 900; line-height: 1.4; text-align: center; word-break: keep-all; overflow-wrap: normal; }
 .result-cover-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; min-height: clamp(92px, 25vw, 124px); }
-.result-cover-head .result-title { width: 72%; min-width: 0; margin: 0; padding: 0; }
+.result-cover-head .result-title { width: 82%; min-width: 0; margin: 0; padding: 0; }
 .result-title-svg { display: block; width: 100%; height: auto; overflow: visible; }
-.result-seal { position: absolute; top: -27px; right: -43px; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(112px, 32vw, 120px); aspect-ratio: 1; padding: 13px 9px; border: 2px solid var(--line); border-radius: 50%; outline: 2px dotted var(--line); outline-offset: -7px; background: #fff; color: var(--navy); font-family: "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; font-size: clamp(10.5px, 2.85vw, 12px); font-weight: 900; line-height: 1.2; text-align: center; }
+.result-seal { position: absolute; top: -33px; right: -43px; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(104px, 28.3vw, 110px); aspect-ratio: 1; padding: 9px 7px; border: 2px solid var(--line); border-radius: 50%; outline: 2px dotted var(--line); outline-offset: -7px; background: #fff; color: var(--navy); font-family: "Hiragino Maru Gothic ProN", "Meiryo", sans-serif; font-size: clamp(9.75px, 2.72vw, 10.9px); font-weight: 900; letter-spacing: -.025em; line-height: 1.23; text-align: center; }
+.result-seal-long { width: clamp(108px, 29.4vw, 112px); font-size: clamp(9.25px, 2.6vw, 10.2px); }
 .result-seal-text { display: block; white-space: nowrap; }
 .dish-frame { width: min(100%, 520px); margin: 0 auto; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--navy); }
 .dish-photo { padding: 11px 11px 24px; border: 1px solid #d5dee9; background: #fff; }
@@ -215,6 +216,7 @@ body.home-mode { background-color: #fff9f7; }
 .share-heading { margin: 0 0 15px; font-size: clamp(1.38rem, 5.7vw, 1.85rem); line-height: 1.4; text-align: center; }
 .card-preview { display: block; width: 100%; aspect-ratio: 4 / 5; background: #fff; border: 1px solid var(--line); }
 .share-actions { display: grid; gap: 11px; margin: 14px 0 0; }
+.share-feedback { margin: 0; padding: 10px 12px; border: 1px solid #8ba0b8; border-radius: 8px; background: #e9f1fb; color: var(--navy); font-size: .91rem; font-weight: 800; line-height: 1.55; }
 .share-backup { display: grid; gap: 8px; margin-top: 4px; }
 .share-backup-label { margin: 0; color: #526b89; font-size: .9rem; font-weight: 800; text-align: center; }
 .share-subactions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
@@ -280,11 +282,11 @@ html:has(.share-heading) { scrollbar-gutter: stable; }
   .quiz-head .dotted { margin: 4px auto 3px; transform: translateY(-8px); }
   .quiz-progress-text { margin: 2px 0 6px; font-size: 1rem; line-height: 1.1; }
   .quiz-paper .question-box { padding: 10px 5px; }
-  .quiz-paper .question-text { font-size: clamp(.98rem, 4.35vw, 1.12rem); line-height: 1.32; letter-spacing: -.025em; }
-  .quiz-paper .answers { gap: 9px; margin-top: 12px; }
-  .quiz-paper .answer { min-height: 50px; padding: 5px 10px; font-size: clamp(.96rem, 4vw, 1.04rem); line-height: 1.32; }
-  .quiz-paper .cooking-footer { width: min(100%, 280px); margin: 17px auto 0; padding-top: 0; }
-  .quiz-paper .cooking-label { margin-bottom: 2px; font-size: .86rem; transform: translateY(-5px); }
+  .quiz-paper .question-text { font-size: clamp(.98rem, 4.35vw, 1.12rem); line-height: 1.48; letter-spacing: -.025em; }
+  .quiz-paper .answers { gap: 10px; margin-top: 12px; }
+  .quiz-paper .answer { min-height: 50px; padding: 6px 10px; font-size: clamp(.96rem, 4vw, 1.04rem); line-height: 1.45; }
+  .quiz-paper .cooking-footer { width: min(100%, 280px); margin: 14px auto 0; padding-top: 0; }
+  .quiz-paper .cooking-label { margin-bottom: 0; font-size: .86rem; }
   .quiz-paper .cooking-scene { height: 115px; }
   .quiz-paper .chef-cooking { bottom: 2px; width: min(40%, 112px); }
 }
@@ -294,8 +296,8 @@ html:has(.share-heading) { scrollbar-gutter: stable; }
 @media (max-width: 350px) {
   .quiz-logo { transform: translateY(-4px); }
   .quiz-head .dotted { transform: translateY(-4px); }
-  .result-cover-head .result-title { width: 67%; }
-  .result-seal { width: 112px; right: -47px; font-size: 10.5px; }
+  .result-cover-head .result-title { width: 76%; }
+  .result-seal { right: -48px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .seasoning-grain { animation: none; opacity: .9; }
