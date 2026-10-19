@@ -197,13 +197,22 @@ function homeView() {
     ${READY ? "" : `<p class="waiting" role="status">確定版の設問と結果原稿を準備中です。</p>`}
     <div class="ribbon-wrap"><span class="ribbon-tail ribbon-tail-left" aria-hidden="true"></span><p class="ribbon">シェアで100ptゲット</p><span class="ribbon-tail ribbon-tail-right" aria-hidden="true"></span></div>`, "", "home-paper");
 }
+const QUESTION_PHRASES = [
+  ["行くことになりました", "決まっていません", "最初に何をしますか"],
+  ["二人とも空いている時間", "チケットを探したら", "売り切れでした"],
+  ["次の休日", "何をしてみたいですか"],
+  ["まず何を考えますか"],
+  ["形が崩れてしまいました", "材料はまだ残っています"],
+  ["仕事の予定が毎週変わる", "続けられるか不安", "最初に何と返しますか"],
+  ["買い物に行くと", "売り切れでした"],
+];
 function quizView(index) {
   const question = CONTENT.questions[index];
-  const progress = Array.from({ length: 7 }, (_, i) => `<li class="${i === index ? "current" : i < index ? "done" : ""}" aria-label="${i + 1}問目"></li>`).join("");
   const answers = question.answers.map((answer, choice) => `<button class="answer" data-action="answer" data-choice="${choice}" aria-pressed="${state.answers[index] === choice}"><span class="answer-number">${["①", "②", "③", "④"][choice]}</span><span>${escapeHtml(answer.text)}</span></button>`).join("");
-  const questionLines = question.text.match(/[^。]+。|[^。]+$/gu) || [question.text];
-  return shell(`<header class="quiz-head">${titleMarkup(true)}<p class="quiz-progress-text">${index + 1}/7</p><ol class="progress-dots" aria-label="全7問の進捗">${progress}</ol></header>
-    <div class="question-box"><p class="question-number">第${index + 1}問</p><h1 class="question-text">${questionLines.map((line) => `<span>${escapeHtml(line)}</span>`).join("")}</h1></div>
+  let questionMarkup = escapeHtml(question.text);
+  for (const phrase of QUESTION_PHRASES[index]) questionMarkup = questionMarkup.replace(escapeHtml(phrase), `<span class="question-phrase">${escapeHtml(phrase)}</span>`);
+  return shell(`<header class="quiz-head">${titleMarkup(true)}<p class="quiz-progress-text">${index + 1}/7</p></header>
+    <div class="question-box"><h1 class="question-text">${questionMarkup}</h1></div>
     <div class="answers" role="group" aria-label="回答を選択">${answers}</div>
     <div class="cooking-footer"><p class="cooking-label"><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M2 1h4v14h3V1h4v14h3V1h4v16c0 6-3 9-7 10v17H9V27C5 26 2 23 2 17z"/></svg><span>レシピ作成中</span><svg class="cooking-utensil" viewBox="0 0 28 45" aria-hidden="true"><path d="M14 1c7 0 11 6 11 14 0 7-4 12-9 13v16h-4V28C7 27 3 22 3 15 3 7 7 1 14 1z"/></svg></p><div class="cooking-scene"><div class="chef-cooking"><img src="${QUIZ_CHEF_IMAGE}" alt="調味料をフライパンに振るリアちゃん" width="1230" height="1278">${seasoningMarkup()}</div>${kitchenPropsMarkup()}</div></div>`, index ? `q-${index}` : "home", "quiz-paper");
 }

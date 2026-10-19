@@ -180,7 +180,10 @@ for (const [type, choices] of examples) {
   for (let index = 0; index < 7; index += 1) {
     assert.equal(site.location.hash, `#q-${index + 1}`);
     const displayedQuestion = site.app.innerHTML.match(/<h1 class="question-text">([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]*>/g, "");
-    assert.equal(displayedQuestion, data.questions[index].text, "改行しても設問の文言を保つ");
+    assert.equal(displayedQuestion, data.questions[index].text, "設問の文言を保つ");
+    assert.doesNotMatch(site.app.innerHTML, /class="question-number"/, "設問枠内の第N問を表示しない");
+    assert.doesNotMatch(site.app.innerHTML, /class="progress-dots"/, "丸と線の進捗バーを表示しない");
+    assert.ok(site.app.innerHTML.includes(`class="quiz-progress-text">${index + 1}/7</p>`), "進捗のN/7を表示する");
     assert.doesNotMatch(site.app.innerHTML, /data-action="next"/);
     assert.match(site.app.innerHTML, /class="kitchen-props"/);
     assert.match(site.app.innerHTML, /class="cooking-utensil"/);
