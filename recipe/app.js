@@ -479,14 +479,15 @@ function drawCenteredBodyLines(ctx, layout, x, y) {
 function drawResultSeal(ctx, result) {
   const x = 1031, y = 385, radius = 150;
   const lines = sealLines(result);
-  const lineHeight = 37;
+  const lineHeight = 35;
   const centers = lines.map((_, index) => y + (index - (lines.length - 1) / 2) * lineHeight);
   const fitSize = () => {
-    for (let size = 34; size >= 30; size--) {
+    for (let size = 34; size >= 24; size--) {
       ctx.font = `800 ${size}px "Hiragino Maru Gothic ProN", "Meiryo", sans-serif`;
       if (lines.every((line, index) => {
         const edge = Math.abs(centers[index] - y) + size * .58;
-        const halfWidth = Math.sqrt(radius * radius - edge * edge) - 18;
+        // Fit inside the dotted inner ring, with space left around every line.
+        const halfWidth = Math.sqrt((radius - 19) ** 2 - edge ** 2) - 6;
         return ctx.measureText(line).width / 2 <= halfWidth;
       })) return size;
     }
@@ -625,18 +626,19 @@ async function drawCard(result) {
     ctx.fillText(HASHTAG, 1148, 1392);
     // Draw the seal last so the dish, frame, title, and decorations cannot cover it.
     drawResultSeal(ctx, result);
-    canvas.toBlob((blob) => {
-      if (!blob || !canvas.isConnected) return;
-      cardPngBlob = blob;
-      cardOpenUrl = URL.createObjectURL(blob);
-      const image = document.querySelector("#save-preview-image");
-      if (image) image.src = cardOpenUrl;
-      cardReady = true;
-      canvas.setAttribute("aria-busy", "false");
-      document.querySelector('[data-action="save"]').disabled = false;
-      document.querySelector('[data-action="share-file"]').disabled = false;
-      document.querySelector('[data-action="save-preview"]').disabled = false;
-    }, "image/png");
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((imageBlob) => imageBlob ? resolve(imageBlob) : reject(new Error("カード画像のPNG書き出しに失敗しました")), "image/png");
+    });
+    if (!canvas.isConnected) return;
+    cardPngBlob = blob;
+    cardOpenUrl = URL.createObjectURL(blob);
+    const preview = document.querySelector("#save-preview-image");
+    if (preview) preview.src = cardOpenUrl;
+    cardReady = true;
+    canvas.setAttribute("aria-busy", "false");
+    document.querySelector('[data-action="save"]').disabled = false;
+    document.querySelector('[data-action="share-file"]').disabled = false;
+    document.querySelector('[data-action="save-preview"]').disabled = false;
   } catch (error) {
     console.error(error);
     showToast("カード画像を作成できませんでした");
@@ -681,7 +683,8 @@ async function shareCard() {
     const result = displayedResult();
     const file = new File([cardPngBlob], `clear-recipe-${result.id}.png`, { type: "image/png" });
     if (!navigator.canShare?.({ files: [file] })) {
-      showToast("カードを保存し、SNSで画像を添付してください"); return;
+      await saveCard();
+      return;
     }
     await navigator.share({ title: "私の隠しレシピ診断", text: shareText(result), files: [file] });
   } catch (error) {
