@@ -221,6 +221,7 @@ body.home-mode { background-color: #fff9f7; }
 .share-backup-label { margin: 0; color: #526b89; font-size: .9rem; font-weight: 800; text-align: center; }
 .share-subactions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
 .share-subactions .secondary { min-height: 48px; padding: 8px 5px; font-size: .91rem; }
+.share-subactions [data-action="save"] { white-space: nowrap; font-size: clamp(.82rem, 3.8vw, .91rem); }
 .share-fallback-link { justify-self: center; padding: 3px 5px; color: var(--line); font-size: .875rem; text-decoration: underline; text-underline-offset: 3px; }
 .share-fallback-link { border: 0; background: transparent; cursor: pointer; }
 .share-fallback-link:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
@@ -274,7 +275,7 @@ html:has(.share-heading) { scrollbar-gutter: stable; }
   .kitchen-scene { height: clamp(175px, 52vw, 280px); }
 }
 @media (max-width: 430px) {
-  .quiz-paper { display: flex; flex-direction: column; justify-content: flex-start; min-height: calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 6px 12px 5px; }
+  .quiz-paper { display: flex; flex-direction: column; justify-content: flex-start; min-height: calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 6px 12px max(5px, calc(100dvh - 715px)); }
   .quiz-paper .topline { min-height: 25px; margin-bottom: 2px; }
   .quiz-paper .back { min-height: 25px; padding: 1px 11px; font-size: .82rem; }
   .quiz-head { margin: 12px 0 12px; }
@@ -282,9 +283,9 @@ html:has(.share-heading) { scrollbar-gutter: stable; }
   .quiz-head .dotted { margin: 4px auto 3px; transform: translateY(-8px); }
   .quiz-progress-text { margin: 2px 0 6px; font-size: 1rem; line-height: 1.1; }
   .quiz-paper .question-box { padding: 10px 5px; }
-  .quiz-paper .question-text { font-size: clamp(.98rem, 4.35vw, 1.12rem); line-height: 1.48; letter-spacing: -.025em; }
-  .quiz-paper .answers { gap: 10px; margin-top: 12px; }
-  .quiz-paper .answer { min-height: 50px; padding: 6px 10px; font-size: clamp(.96rem, 4vw, 1.04rem); line-height: 1.45; }
+  .quiz-paper .question-text { font-size: clamp(.98rem, 4.35vw, 1.05rem); line-height: 1.48; letter-spacing: -.025em; }
+  .quiz-paper .answers { flex: 1; align-content: space-between; gap: 10px; margin-top: 12px; }
+  .quiz-paper .answer { min-height: 50px; padding: 6px 10px; font-size: clamp(.96rem, 4vw, 1rem); line-height: 1.45; }
   .quiz-paper .cooking-footer { width: min(100%, 280px); margin: 14px auto 0; padding-top: 0; }
   .quiz-paper .cooking-label { margin-bottom: 0; font-size: .86rem; }
   .quiz-paper .cooking-scene { height: 115px; }

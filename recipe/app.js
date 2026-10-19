@@ -240,7 +240,7 @@ function shareView(result) {
   return shell(`<h1 class="share-heading">レシピカードをシェアしよう</h1>
     <canvas id="recipe-card" class="card-preview" width="1200" height="1500" role="img" aria-label="${escapeHtml(result.name)}のシェア用レシピカード" aria-busy="true"></canvas>
     <div class="share-actions"><button class="primary" data-action="share-file" disabled>画像付きで共有する</button><p class="share-feedback" id="share-feedback" role="status" hidden></p>
-      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>カード画像を保存する</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><button class="share-fallback-link" data-action="save-preview" disabled>保存できない場合はこちら</button></div></div>
+      <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>画像を保存する</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><button class="share-fallback-link" data-action="save-preview" disabled>保存できない場合はこちら</button></div></div>
     <div class="save-preview" id="save-preview" hidden><p>画像を長押しして保存してください。閉じるとシェア画面に戻ります。</p><img id="save-preview-image" alt="保存用レシピカード"><button class="secondary" data-action="close-save-preview">画像を閉じる</button></div>
     <p class="share-note">共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
     <details class="share-social"><summary>SNSを選んでシェア</summary><div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
@@ -664,10 +664,18 @@ function showShareFeedback(message) {
   feedback.textContent = message;
   feedback.hidden = false;
 }
+function isAppleTouchDevice() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+function saveInstructions() {
+  return isAppleTouchDevice()
+    ? "下の『画像を保存する』を押し、表示されたカード画像を長押しして保存してください。"
+    : "下の『画像を保存する』を押してカード画像をダウンロードしてください。";
+}
 async function saveCard() {
   try {
     if (!cardReady || !cardPngBlob) throw new Error("カードの準備ができていません");
-    if (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) {
+    if (isAppleTouchDevice()) {
       showSavePreview();
       showShareFeedback("カード画像を表示しました。画像を長押しして保存してください。");
       return;
@@ -686,25 +694,29 @@ async function shareCard() {
     if (!cardReady || !cardPngBlob) throw new Error("カードの準備ができていません");
     const result = displayedResult();
     if (!window.isSecureContext) {
-      showShareFeedback("この確認用リンクは安全な接続ではないため、画像付き共有を開けません。『カード画像を保存する』から画像を保存してください。");
+      showShareFeedback(`この確認用リンクはHTTP接続のため、画像付き共有を開けません。${saveInstructions()}`);
       return;
     }
     if (typeof File !== "function") {
-      showShareFeedback("このブラウザでは画像ファイルの共有に対応していません。『カード画像を保存する』から画像を保存してください。");
+      showShareFeedback(`このブラウザでは画像ファイルの共有に対応していません。${saveInstructions()}`);
       return;
     }
     const file = new File([cardPngBlob], `clear-recipe-${result.id}.png`, { type: "image/png" });
-    if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
-      showShareFeedback("このブラウザでは画像付き共有が利用できません。『カード画像を保存する』から画像を保存してください。");
+    if (typeof navigator.share !== "function") {
+      showShareFeedback(`このブラウザには画像付き共有機能がありません。${saveInstructions()}`);
+      return;
+    }
+    if (typeof navigator.canShare !== "function" || !navigator.canShare({ files: [file] })) {
+      showShareFeedback(`このブラウザではカード画像の共有に対応していません。${saveInstructions()}`);
       return;
     }
     showShareFeedback("画像付きの共有画面を開いています…");
     await navigator.share({ title: "私の隠しレシピ診断", text: shareText(result), files: [file] });
     showShareFeedback("共有画面を閉じました。画像が添付されたか確認してください。");
   } catch (error) {
-    if (error.name === "AbortError") { showShareFeedback("共有をキャンセルしました。『カード画像を保存する』から保存もできます。"); return; }
+    if (error.name === "AbortError") { showShareFeedback(`共有をキャンセルしました。${saveInstructions()}`); return; }
     console.error(error);
-    showShareFeedback("画像付き共有を開けませんでした。『カード画像を保存する』から画像を保存し、SNSで添付してください。");
+    showShareFeedback(`画像付き共有を開けませんでした（${error.name || "共有エラー"}）。${saveInstructions()}SNSで画像を添付してください。`);
   }
 }
 async function copyText(text) {
