@@ -78,7 +78,7 @@ assert.equal(examples.size, 6, "6結果すべてに到達できる");
 assert.ok(tieCases.normalized > 0);
 assert.ok(tieCases.latest > 0);
 
-function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent = "", sealFontScale = 1, blobFailure = false, imageFailure = false, shareFailure = false } = {}) {
+function makeApp(urlText, { withCanvas = false, canShareFiles = true, secureContext = true, userAgent = "", sealFontScale = 1, blobFailure = false, imageFailure = false, shareFailure = false } = {}) {
   const answerButtons = Array.from({ length: 4 }, (_, choice) => ({
     dataset: { action: "answer", choice: String(choice) },
     attributes: {},
@@ -107,8 +107,10 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
   const savePreviewImage = { src: "" };
   const savePreview = { hidden: true, scrollIntoView() {} };
   const toast = { textContent: "", classList: { add() {}, remove() {} } };
+  const shareFeedback = { textContent: "", hidden: true };
   const errors = [];
   let sharedData = null;
+  let downloaded = null;
   const canvas = {
     isConnected: true,
     getContext() { return drawing; },
@@ -117,8 +119,12 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
   };
   const document = {
     title: "",
-    body: { classList: { toggle(name, enabled) { enabled ? classes.add(name) : classes.delete(name); } } },
+    body: { classList: { toggle(name, enabled) { enabled ? classes.add(name) : classes.delete(name); } }, appendChild() {} },
     fonts: { load: async () => [], ready: Promise.resolve() },
+    createElement(tag) {
+      assert.equal(tag, "a");
+      return { href: "", download: "", click() { downloaded = { href: this.href, filename: this.download }; }, remove() {} };
+    },
     querySelector(selector) {
       return selector === "#app" ? app
         : withCanvas && selector === "#recipe-card" ? canvas
@@ -127,6 +133,7 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
         : withCanvas && selector === '[data-action="save-preview"]' ? savePreviewButton
         : withCanvas && selector === "#save-preview-image" ? savePreviewImage
         : withCanvas && selector === "#save-preview" ? savePreview
+        : withCanvas && selector === "#share-feedback" ? shareFeedback
         : selector === "#toast" ? toast
         : null;
     },
@@ -142,7 +149,7 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
     pushState(_a, _b, url) { updateLocation(url); },
     replaceState(_a, _b, url) { updateLocation(url); },
   };
-  const window = { addEventListener() {}, scrollTo() {} };
+  const window = { isSecureContext: secureContext, scrollY: 0, addEventListener() {}, scrollTo() {} };
   class Image {
     naturalWidth = 1402;
     naturalHeight = 1122;
@@ -157,6 +164,7 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
     navigator: { userAgent, canShare({ files }) { return canShareFiles && files.length === 1; }, async share(data) { if (shareFailure) throw new Error("共有に失敗しました"); sharedData = data; } },
     setTimeout(callback) { const id = ++nextTimer; timers.set(id, callback); return id; },
     clearTimeout(id) { timers.delete(id); },
+    requestAnimationFrame(callback) { callback(); },
   });
   vm.runInContext(contentSource, context);
   vm.runInContext(appSource, context);
@@ -170,7 +178,7 @@ function makeApp(urlText, { withCanvas = false, canShareFiles = true, userAgent 
     timers.delete(id);
     callback();
   }
-  return { app, location, document, click, advanceAnswer, answerButtons, window, drawing, drawnText, saveButton, shareButton, savePreviewButton, savePreview, toast, errors, get sharedData() { return sharedData; } };
+  return { app, location, document, click, advanceAnswer, answerButtons, window, drawing, drawnText, saveButton, shareButton, savePreviewButton, savePreview, shareFeedback, toast, errors, get sharedData() { return sharedData; }, get downloaded() { return downloaded; } };
 }
 
 for (const [type, choices] of examples) {
@@ -211,7 +219,7 @@ for (const [type, choices] of examples) {
   assert.ok(site.app.innerHTML.includes(result.image), `料理画像: ${type}`);
   assert.ok(site.app.innerHTML.includes(`aria-label="${result.seal}"`), `丸い欄の文言: ${type}`);
   assert.ok(site.app.innerHTML.includes(`<span class="result-seal-text">${sealBreaks[type].join("<br>")}</span>`), `丸い欄の3行: ${type}`);
-  assert.ok(site.app.innerHTML.includes('class="result-seal"'), `丸い欄: ${type}`);
+  assert.match(site.app.innerHTML, /<div class="result-seal(?: result-seal-long)?"/, `丸い欄: ${type}`);
   assert.match(site.app.innerHTML, /結果の見方/, `結果の見方: ${type}`);
   assert.doesNotMatch(site.app.innerHTML, /result-seal-divider/, `波線なし: ${type}`);
   await site.click("share-page");
@@ -231,6 +239,7 @@ for (const type of types) {
   assert.ok(preview.app.innerHTML.includes(data.results.find((entry) => entry.type === alternate).hiddenFlavorText));
   const card = makeApp(`file:///recipe/index.html?preview=share-${type}&flavor=${alternate}`, { withCanvas: true });
   assert.match(card.app.innerHTML, /id="recipe-card"/);
+  assert.match(card.app.innerHTML, /data-action="save" disabled>画像を保存する<\/button>/);
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(card.saveButton.disabled, false, `保存ボタン: ${type}`);
   assert.equal(card.shareButton.disabled, false, `共有ボタン: ${type}`);
@@ -238,6 +247,8 @@ for (const type of types) {
   const shareLocation = card.location.href;
   await card.click("save");
   assert.equal(card.location.href, shareLocation, `保存で画面を移動しない: ${type}`);
+  assert.equal(card.downloaded.filename, `clear-recipe-${data.results.find((entry) => entry.type === type).id}.png`, `PNGをダウンロード: ${type}`);
+  await card.click("share-file");
   assert.equal(card.sharedData.files[0].type, "image/png", `保存メニューにPNGを渡す: ${type}`);
   const fallback = makeApp(`file:///recipe/index.html?preview=share-${type}`, { withCanvas: true, canShareFiles: false, userAgent: "iPhone" });
   await new Promise((resolve) => setImmediate(resolve));
@@ -248,6 +259,8 @@ for (const type of types) {
   await fallback.click("close-save-preview");
   assert.equal(fallback.savePreview.hidden, true, `代替保存画像を閉じる: ${type}`);
   await fallback.click("share-file");
+  assert.match(fallback.shareFeedback.textContent, /画像を保存する/, `共有非対応時に保存方法を案内: ${type}`);
+  await fallback.click("save-preview");
   assert.equal(fallback.savePreview.hidden, false, `共有非対応時も画像保存へ進める: ${type}`);
   assert.equal(card.drawing.imageCount, 7, `料理画像・最新版リアちゃん・タイトル・背景: ${type}`);
   const text = card.drawnText.map((entry) => entry.text).join("");
@@ -322,9 +335,14 @@ await new Promise((resolve) => setImmediate(resolve));
 await failedShare.click("share-file");
 assert.equal(failedShare.shareButton.disabled, false, "共有APIの失敗後もカードを利用できる");
 assert.equal(failedShare.saveButton.disabled, false, "共有APIの失敗後も保存できる");
-assert.equal(failedShare.toast.textContent, "カードを保存し、SNSで画像を添付してください", "共有APIの失敗時は保存を案内する");
+assert.match(failedShare.shareFeedback.textContent, /画像付き共有を開けませんでした（Error）.*画像を保存する/, "共有APIの失敗時は保存を案内する");
 await failedShare.click("save");
 assert.equal(failedShare.savePreview.hidden, false, "共有APIの失敗後、iPhone向け長押し保存を表示する");
+const insecureShare = makeApp("http://localhost/recipe/index.html?preview=share-C", { withCanvas: true, secureContext: false, userAgent: "iPhone" });
+await new Promise((resolve) => setImmediate(resolve));
+await insecureShare.click("share-file");
+assert.match(insecureShare.shareFeedback.textContent, /HTTP接続.*画像を保存する/, "安全でない接続では保存方法をすぐ案内する");
+assert.equal(insecureShare.sharedData, null, "安全でない接続では共有APIを呼ばない");
 for (let index = 1; index <= 7; index += 1) {
   const preview = makeApp(`file:///recipe/index.html?preview=q-${index}`);
   const displayedQuestion = preview.app.innerHTML.match(/<h1 class="question-text">([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]*>/g, "");
