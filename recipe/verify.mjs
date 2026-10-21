@@ -32,6 +32,7 @@ const sealBreaks = {
   E: ["予定が変わったら", "すぐに", "切り替え"],
   F: ["少しずつ、", "じっくり", "積み重ねる"],
 };
+const expectedShareText = (result) => `#PR\n私の隠しレシピ、できあがりました🍳\n診断結果は「${result.name}」。\nあなたのレシピも作ってみてね。\nhttps://clear-official.github.io/clear-share-lab/recipe/\n#CLEARシェアラボ`;
 for (const result of data.results) {
   assert.deepEqual([result.name, result.seal, result.description, result.ingredients, result.tip, result.hiddenFlavorText], finalCopy[result.type], `確定稿: ${result.type}`);
 }
@@ -240,6 +241,14 @@ for (const type of types) {
   const card = makeApp(`file:///recipe/index.html?preview=share-${type}&flavor=${alternate}`, { withCanvas: true });
   assert.match(card.app.innerHTML, /id="recipe-card"/);
   assert.match(card.app.innerHTML, /data-action="save" disabled>画像を保存する<\/button>/);
+  const result = data.results.find((entry) => entry.type === type);
+  const xHref = card.app.innerHTML.match(/href="([^"]+)"[^>]*>Xでシェア<\/a>/)?.[1].replaceAll("&amp;", "&");
+  assert.equal(new URL(xHref).searchParams.get("text"), expectedShareText(result), `X投稿文: ${type}`);
+  assert.match(card.app.innerHTML, /投稿前に「#PR」と「#CLEARシェアラボ」を削除しないでください/);
+  assert.match(card.app.innerHTML, /アプリのインストールは100pt付与の条件ではありません/);
+  assert.match(card.app.innerHTML, /href="https:\/\/clear\.go\.link\?adj_t=25lp7wnr"[^>]*>App Store<\/a>/);
+  assert.match(card.app.innerHTML, /href="https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.clear\.user&amp;hl=ja"[^>]*>Google Play<\/a>/);
+  assert.doesNotMatch(expectedShareText(result), /clear\.go\.link|play\.google\.com/, `投稿文にストアURLを入れない: ${type}`);
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(card.saveButton.disabled, false, `保存ボタン: ${type}`);
   assert.equal(card.shareButton.disabled, false, `共有ボタン: ${type}`);
@@ -247,9 +256,11 @@ for (const type of types) {
   const shareLocation = card.location.href;
   await card.click("save");
   assert.equal(card.location.href, shareLocation, `保存で画面を移動しない: ${type}`);
-  assert.equal(card.downloaded.filename, `clear-recipe-${data.results.find((entry) => entry.type === type).id}.png`, `PNGをダウンロード: ${type}`);
+  assert.equal(card.downloaded.filename, `clear-recipe-${result.id}.png`, `PNGをダウンロード: ${type}`);
   await card.click("share-file");
-  assert.equal(card.sharedData.files[0].type, "image/png", `保存メニューにPNGを渡す: ${type}`);
+  assert.equal(card.sharedData.text, expectedShareText(result), `画像付き共有の投稿文: ${type}`);
+  assert.equal(card.sharedData.files[0].type, "image/png", `画像付き共有にPNGを渡す: ${type}`);
+  assert.match(card.shareFeedback.textContent, /投稿文と画像を確認してください/, `共有先での確認案内: ${type}`);
   const fallback = makeApp(`file:///recipe/index.html?preview=share-${type}`, { withCanvas: true, canShareFiles: false, userAgent: "iPhone" });
   await new Promise((resolve) => setImmediate(resolve));
   const fallbackLocation = fallback.location.href;
@@ -264,7 +275,6 @@ for (const type of types) {
   assert.equal(fallback.savePreview.hidden, false, `共有非対応時も画像保存へ進める: ${type}`);
   assert.equal(card.drawing.imageCount, 7, `料理画像・最新版リアちゃん・タイトル・背景: ${type}`);
   const text = card.drawnText.map((entry) => entry.text).join("");
-  const result = data.results.find((entry) => entry.type === type);
   const flavor = data.results.find((entry) => entry.type === alternate);
   for (const copy of [result.name, result.ingredients, result.description, result.tip, result.seal, flavor.hiddenFlavorText]) {
     assert.ok(text.includes(copy), `カードの文字: ${type} ${copy}`);

@@ -4,6 +4,8 @@ const CONTENT = window.RECIPE_CONTENT;
 const STORAGE_KEY = "clearShareLab_recipe_v1";
 const SUPPORT_URL = "https://app-clear.com/open?act=page_contact";
 const SHARE_URL = "https://clear-official.github.io/clear-share-lab/recipe/";
+const APP_STORE_URL = "https://clear.go.link?adj_t=25lp7wnr";
+const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=com.clear.user&hl=ja";
 const HASHTAG = "#CLEARシェアラボ";
 const CHEF_IMAGE = "../assets/recipe/chef-latest.png";
 const QUIZ_CHEF_IMAGE = "../assets/recipe/chef-cooking.png";
@@ -231,7 +233,7 @@ function resultView(result) {
     <div class="result-actions"><button class="primary" data-action="share-page">ポイント獲得方法はコチラ</button><button class="secondary" data-action="restart">もう一度診断する</button></div><div class="result-band result-band-bottom" aria-hidden="true"></div>`, "q-7", "result-paper");
 }
 function shareText(result) {
-  return `私の隠しレシピ診断をやってみた！\n結果は「${result.name}」でした。\n\n${HASHTAG}\n\n${SHARE_URL}`;
+  return `#PR\n私の隠しレシピ、できあがりました🍳\n診断結果は「${result.name}」。\nあなたのレシピも作ってみてね。\n${SHARE_URL}\n${HASHTAG}`;
 }
 function shareView(result) {
   const text = shareText(result);
@@ -242,15 +244,17 @@ function shareView(result) {
     <div class="share-actions"><button class="primary" data-action="share-file" disabled>画像付きで共有する</button><p class="share-feedback" id="share-feedback" role="status" hidden></p>
       <div class="share-backup"><p class="share-backup-label">うまく共有できない場合</p><div class="share-subactions"><button class="secondary" data-action="save" disabled>画像を保存する</button><button class="secondary" data-action="copy">投稿文をコピー</button></div><button class="share-fallback-link" data-action="save-preview" disabled>保存できない場合はこちら</button></div></div>
     <div class="save-preview" id="save-preview" hidden><p>画像を長押しして保存してください。閉じるとシェア画面に戻ります。</p><img id="save-preview-image" alt="保存用レシピカード"><button class="secondary" data-action="close-save-preview">画像を閉じる</button></div>
-    <p class="share-note">共有先に画像が付かない場合は、SNSの投稿画面で保存した画像を添付してください。</p>
+    <p class="share-note share-disclosure">投稿前に「#PR」と「${HASHTAG}」を削除しないでください。</p>
+    <p class="share-note">共有先に文章や画像が付かない場合は、投稿文のコピーと画像の保存をご利用ください。</p>
     <details class="share-social"><summary>SNSを選んでシェア</summary><div class="share-destinations"><a class="share-link" href="${escapeHtml(x)}" target="_blank" rel="noopener noreferrer">Xでシェア</a><a class="share-link" href="${escapeHtml(line)}" target="_blank" rel="noopener noreferrer">LINEでシェア</a></div>
-      <p class="share-note">X・LINEでは投稿画面でカード画像が添付されているか確認してください。</p></details>
+      <p class="share-note">X・LINEのリンクでは投稿文が開きます。カード画像は別途添付してください。</p></details>
     <section class="reward"><h2 class="reward-banner"><img src="../assets/recipe/banner-cover.png" alt="私の隠しレシピ診断・シェアで100ptゲット" width="330" height="140"></h2><ol>
       <li><span class="step-number">1</span><span>診断結果のカード画像と「${HASHTAG}」を付けてSNSに投稿</span></li>
       <li><span class="step-number">2</span><span>画面全体のスクリーンショットを撮影。<strong>スクリーンショットは切り取らないでください。</strong><span class="reward-capture-note">投稿・送信したアカウント名、投稿先または送信先の名前、投稿・送信内容、カード画像が画面内で分かるようにしてください。</span></span></li>
       <li><span class="step-number">3</span><span>スクリーンショットを問い合わせ窓口へ送信</span></li>
       <li><span class="step-number">4</span><span>運営側が確認後、100ptを加算</span></li>
-    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small"><span>※ポイントの受け取りは</span><span>お1人様1回までです。</span></p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small"><span>※確認状況により、</span><span>ポイント加算が</span><span>翌日になる場合があります。</span></p></section>`, "result");
+    </ol><a class="primary" href="${SUPPORT_URL}">問い合わせ窓口はこちら</a><p class="reward-small"><span>※ポイントの受け取りは</span><span>お1人様1回までです。</span></p><p class="reward-small">※SNSで実際にシェアしていただく企画のため、公開状態の投稿が対象です。非公開投稿・公式アカウントへのシェアは対象外です。</p><p class="reward-small"><span>※確認状況により、</span><span>ポイント加算が</span><span>翌日になる場合があります。</span></p></section>
+    <section class="app-store" aria-labelledby="app-store-title"><h2 id="app-store-title">Clearアプリを見る</h2><p>ストアを見るのは任意です。アプリのインストールは100pt付与の条件ではありません。</p><div class="app-store-links"><a href="${escapeHtml(APP_STORE_URL)}" target="_blank" rel="noopener noreferrer">App Store</a><a href="${escapeHtml(GOOGLE_PLAY_URL)}" target="_blank" rel="noopener noreferrer">Google Play</a></div></section>`, "result");
 }
 
 function render() {
@@ -712,7 +716,7 @@ async function shareCard() {
     }
     showShareFeedback("画像付きの共有画面を開いています…");
     await navigator.share({ title: "私の隠しレシピ診断", text: shareText(result), files: [file] });
-    showShareFeedback("共有画面を閉じました。画像が添付されたか確認してください。");
+    showShareFeedback("共有先で投稿文と画像を確認してください。文章が入っていない場合は『投稿文をコピー』をご利用ください。");
   } catch (error) {
     if (error.name === "AbortError") { showShareFeedback(`共有をキャンセルしました。${saveInstructions()}`); return; }
     console.error(error);
