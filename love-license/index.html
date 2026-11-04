@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#e9f7ff">
-  <title>恋愛運転免許証｜Clear シェアラボ 第3回</title>
-  <link rel="stylesheet" href="styles.css?v=20261104b">
+  <title>恋愛運転免許証｜CLEAR シェアラボ 第3回</title>
+  <link rel="stylesheet" href="styles.css?v=20261104c">
 </head>
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <span>Clear シェアラボ 第3回</span>
+      <span>CLEAR シェアラボ 第3回</span>
       <img src="assets/logo-title.png" alt="恋愛運転免許証">
+      <button type="button" class="text-link back-question" id="back-question" hidden>ひとつ前に戻る</button>
     </div>
   </header>
   <main class="site-main">
@@ -26,8 +27,7 @@
           <img class="hero-sign hero-sign-right" src="assets/sign-heart.png" alt="">
           <img class="hero-car" src="assets/driving.png" alt="">
         </div>
-        <button type="button" class="button primary" id="start-button">診断をはじめる</button>
-        <p class="point-band">シェアした内容を運営で確認後、100ptを加算します。</p>
+        <button type="button" class="button primary" id="start-button">運転スタート</button>
         <button type="button" class="text-link" id="show-participation" aria-expanded="false" aria-controls="participation-panel">参加方法を見る</button>
       </div>
       <section id="participation-panel" class="panel participation" hidden>
@@ -36,37 +36,33 @@
           <li>診断して免許証画像をつくる</li>
           <li>画像を添えて、SNSやLINEでシェア</li>
           <li>投稿・送信した画面をスクリーンショット</li>
-          <li>お問い合わせ窓口へ送り、運営で確認後に100ptを加算</li>
+          <li>お問い合わせ窓口へスクリーンショットを送付</li>
         </ol>
       </section>
     </section>
 
     <section id="quiz-screen" class="screen" hidden>
-      <p id="quiz-intro" class="quiz-intro">それぞれの場面で、自分に一番近いものを選んでください。</p>
-      <div class="quiz-top">
-        <p id="quiz-progress" class="quiz-progress">1 / 7</p>
-      </div>
+      <p id="quiz-intro" class="visually-hidden">それぞれの場面で、自分に一番近いものを選んでください。</p>
       <div class="panel question-panel">
-        <p id="quiz-number" class="question-number">第1問</p>
         <h1 id="quiz-prompt"></h1>
         <div id="quiz-options" class="quiz-options" role="group" aria-label="選択肢"></div>
         <p id="answer-status" class="answer-status" role="status" aria-live="polite"></p>
       </div>
-      <button type="button" class="text-link back-question" id="back-question">ひとつ前に戻る</button>
+      <div id="quiz-progress" class="quiz-progress" role="progressbar" aria-label="診断の回答状況" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0" aria-valuetext="7問中0問に回答済み"><span id="quiz-progress-fill"></span></div>
       <div class="quiz-scene" aria-hidden="true">
-        <div class="quiz-road"></div>
-        <img class="street-item street-left street-turn" src="assets/sign-turn.png" alt="">
-        <img class="street-item street-right street-tree" src="assets/tree.png" alt="">
-        <img class="street-item street-left street-cafe" src="assets/cafe.png" alt="">
-        <img class="street-item street-right street-heart" src="assets/sign-heart.png" alt="">
-        <img class="street-item street-left street-traffic" src="assets/traffic.png" alt="">
-        <img class="street-item street-right street-tree-again" src="assets/tree.png" alt="">
+        <svg class="quiz-road" viewBox="0 0 1000 200" preserveAspectRatio="none" focusable="false" aria-hidden="true"><path class="road-surface" d="M470 0H530L1000 200H0Z"/><path class="road-edge" d="M470 0 62 200H28Z M530 0 972 200H938Z"/></svg>
+        <div class="street-item street-left street-turn crop-sign"><img src="assets/sign-turn.png" alt=""></div>
+        <div class="street-item street-right street-tree crop-tree"><img src="assets/tree.png" alt=""></div>
+        <div class="street-item street-left street-cafe crop-cafe"><img src="assets/cafe.png" alt=""></div>
+        <div class="street-item street-right street-heart crop-sign"><img src="assets/sign-heart.png" alt=""></div>
+        <div class="street-item street-left street-traffic crop-traffic"><img src="assets/traffic.png" alt=""></div>
+        <div class="street-item street-right street-tree-again crop-tree"><img src="assets/tree.png" alt=""></div>
         <img class="quiz-car" src="assets/driving.png" alt="">
       </div>
     </section>
 
     <section id="result-screen" class="screen" hidden>
-      <p class="result-eyebrow">診断完了 · 恋愛運転免許証を発行しました</p>
+      <p class="result-eyebrow">恋愛運転免許証を発行しました</p>
       <h1 class="page-heading">あなたの恋愛運転タイプは</h1>
       <p id="result-type-name" class="result-type-name"></p>
       <figure class="license-block">
@@ -82,7 +78,7 @@
         <input id="license-name" type="text" inputmode="text" autocomplete="off" maxlength="40" aria-describedby="name-limit" placeholder="空欄でもOK">
         <p id="name-limit" class="limit">12文字まで · <span id="name-count">0</span>/12文字</p>
       </section>
-      <section class="panel editorial"><h2>総評</h2><p id="summary"></p></section>
+      <section class="panel editorial"><h2>総評</h2><div id="summary"></div></section>
       <section class="panel tip"><h2>安全運転のコツ</h2><p id="tip"></p></section>
       <div class="result-actions">
         <button type="button" class="button primary" id="to-share">シェアの方法を見る</button>
@@ -134,10 +130,10 @@
       <section class="panel conditions"><h2>詳しい参加条件</h2>
         <h3>公開SNSでのシェア</h3><p id="eligible-sns" class="section-note" hidden></p>
         <p>免許証画像を添えて、投稿文に「#PR」「#CLEARシェアラボ」を入れてご投稿ください。運営で確認できるよう、確認が完了するまではアカウントと投稿を公開状態にしていただけますと幸いです。</p>
-        <h3>LINEでのシェア</h3><p>ご友人やご家族など、Clear公式アカウント以外の方とのトークが対象です。ハッシュタグの記載は不要です。</p>
+        <h3>LINEでのシェア</h3><p>ご友人やご家族など、CLEAR公式アカウント以外の方とのトークが対象です。ハッシュタグの記載は不要です。</p>
         <h3>スクリーンショットについて</h3><p>シェア後の画面全体を、切り取らずにお送りいただけますと確認がスムーズです。公開SNSではアカウント名と投稿内容、LINEでは送信先と送信内容が分かる状態でお願いいたします。</p>
-        <h3>ポイントについて</h3><p>内容を確認後、運営より100ptを加算いたします。確認状況によっては、加算が翌日になる場合がございます。お受け取りは、今回のイベントにつきClearの1アカウント1回までとなります。</p>
-        <h3>対象について</h3><p>Clear公式アカウント宛へのシェアは、対象に含まれません。</p>
+        <h3>ポイントについて</h3><p>内容を確認後、運営より100ptを加算いたします。確認状況によっては、加算が翌日になる場合がございます。お受け取りは、今回のイベントにつきCLEARの1アカウント1回までとなります。</p>
+        <h3>対象について</h3><p>CLEAR公式アカウント宛へのシェアは、対象に含まれません。</p>
       </section>
     </section>
     <div id="image-preview" class="image-preview" hidden role="dialog" aria-modal="true" aria-label="保存用の免許証画像">
@@ -147,6 +143,6 @@
     </div>
   </main>
   <script src="config.js"></script>
-  <script type="module" src="app.mjs?v=20261104b"></script>
+  <script type="module" src="app.mjs?v=20261104c"></script>
 </body>
 </html>

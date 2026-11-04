@@ -50,6 +50,8 @@ function showScreen() {
   if (!["home","quiz","result","share"].includes(screen)) screen="home";
   if ((screen==="result"||screen==="share") && !state.resultId) screen="home";
   $$(".screen").forEach(node=>node.hidden=node.id!==screen+"-screen");
+  document.body.dataset.screen=screen;
+  $("#back-question").hidden=screen!=="quiz" || state.questionIndex===0;
   if (screen!=="quiz") $(".quiz-scene").dataset.active="false";
   document.title="恋愛運転免許証｜"+({home:"診断",quiz:"質問",result:"診断結果",share:"シェアで100pt"}[screen]);
   if (screen==="quiz") renderQuiz();
@@ -60,9 +62,8 @@ function showScreen() {
 function renderQuiz() {
   const q=QUESTIONS[state.questionIndex];
   $("#quiz-intro").hidden=state.questionIndex!==0;
-  $("#quiz-progress").textContent=(state.questionIndex+1)+" / 7";
-  $("#quiz-number").textContent="第"+(state.questionIndex+1)+"問";
   $("#quiz-prompt").textContent=q.prompt;
+  updateProgress();
   $("#answer-status").textContent="";
   $("#back-question").hidden=state.questionIndex===0;
   const group=$("#quiz-options");
@@ -78,12 +79,20 @@ function renderQuiz() {
     group.append(button);
   });
 }
+function updateProgress() {
+  const completed=state.answers.filter(answer=>answer!==null).length;
+  const bar=$("#quiz-progress");
+  bar.setAttribute("aria-valuenow",String(completed));
+  bar.setAttribute("aria-valuetext","7問中"+completed+"問に回答済み");
+  $("#quiz-progress-fill").style.width=(completed/7*100)+"%";
+}
 function answer(choice) {
   if (answerLocked) return;
   answerLocked=true;
   const questionIndex=state.questionIndex;
   state.answers[questionIndex]=choice;
   persist();
+  updateProgress();
   $$(".answer").forEach((button,index)=>{
     button.setAttribute("aria-pressed",String(index===choice));
     button.disabled=true;
@@ -245,10 +254,29 @@ async function ensureImage() {
 function renderResult() {
   const type=typeById(state.resultId);
   if (!type) return;
-  $("#result-type-name").textContent=type.name;
+  const typeParts={
+    A:["好きなら直進、","アクセル型"],
+    B:["脈あり待ちの","信号待ち型"],
+    C:["友達レーンで","周回型"],
+    D:["本音を聞いて","ルート相談型"],
+    E:["ときめくほど","急ブレーキ型"]
+  }[type.id];
+  const title=$("#result-type-name");
+  title.replaceChildren();
+  if (typeParts?.join("")===type.name) {
+    typeParts.forEach(part=>{const span=document.createElement("span");span.textContent=part;title.append(span);});
+  } else title.textContent=type.name;
+  title.setAttribute("aria-label",type.name);
   $("#license-name").value=state.name;
   $("#name-count").textContent=chars(state.name).length;
-  $("#summary").textContent=type.summary;
+  const sentences=type.summary.match(/[^。]+。|[^。]+$/g)||[type.summary];
+  const summary=$("#summary");
+  summary.replaceChildren();
+  for (let index=0;index<sentences.length;index+=2) {
+    const paragraph=document.createElement("p");
+    paragraph.textContent=sentences.slice(index,index+2).join("");
+    summary.append(paragraph);
+  }
   $("#tip").textContent=type.tip;
 }
 function status(message) {$("#operation-status").textContent=message;}
@@ -300,6 +328,7 @@ $("#start-button").addEventListener("click",()=>{
   cancelAnswerTimer();
   state=blankState();persist();
   renderedKey="";imageBlob=null;
+  updateProgress();
   navigate("quiz");
 });
 $("#show-participation").addEventListener("click",()=>{
