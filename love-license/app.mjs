@@ -290,6 +290,7 @@ function updatePostPreview() {
   $("#post-preview").value=text||"";
   $("#native-share").disabled=!text||!imageBlob;
   $("#copy-post").disabled=!text;
+  $$('[data-condition]').forEach(section=>section.hidden=section.dataset.condition!==destination());
 }
 function openImagePreview() {
   if (!imageBlob || renderedKey!==imageKey()) {saveStatus("免許証画像を準備中です。少し待ってからお試しください。");return;}

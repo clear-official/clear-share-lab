@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#e9f7ff">
   <title>恋愛運転免許証｜CLEAR シェアラボ 第3回</title>
-  <link rel="stylesheet" href="styles.css?v=20261104c">
+  <link rel="stylesheet" href="styles.css?v=20261104d">
 </head>
-<body>
+<body data-screen="home">
   <header class="site-header">
     <div class="header-inner">
       <span>CLEAR シェアラボ 第3回</span>
@@ -90,16 +90,27 @@
     </section>
 
     <section id="share-screen" class="screen" hidden>
-      <h1 class="page-heading">シェアで100pt</h1>
-      <p class="share-lead">免許証画像をシェアして、投稿・送信画面のスクリーンショットをお送りください。運営で確認後、100ptを加算します。</p>
+      <div class="share-hero">
+        <img class="coin coin-left-top" src="assets/coin-angle-1.png" alt="" aria-hidden="true">
+        <img class="coin coin-left-bottom" src="assets/coin-front.png" alt="" aria-hidden="true">
+        <h1 class="share-title"><span>シェアで</span><strong>100pt</strong></h1>
+        <img class="coin coin-right-top" src="assets/coin-angle-2.png" alt="" aria-hidden="true">
+        <img class="coin coin-right-bottom" src="assets/coin-front.png" alt="" aria-hidden="true">
+      </div>
       <figure class="license-block">
         <img class="license-image" data-license-image alt="共有する恋愛運転免許証">
       </figure>
+      <section class="panel steps"><h2>参加手順</h2><ol>
+        <li>免許証画像を添えてシェア</li>
+        <li>投稿・送信した画面をスクリーンショット</li>
+        <li>お問い合わせ窓口へ送付</li>
+        <li>運営で確認後、100ptを加算</li>
+      </ol></section>
       <section class="panel share-actions">
         <h2>投稿先を選ぶ</h2>
         <fieldset class="destination-options"><legend class="visually-hidden">投稿先</legend>
-          <label><input type="radio" name="destination" value="public" checked><span>公開SNS <small>#PR と #CLEARシェアラボを付けて投稿</small></span></label>
-          <label><input type="radio" name="destination" value="line"><span>LINEで友だちに送る <small>ハッシュタグなしで送信</small></span></label>
+          <label><input type="radio" name="destination" value="public" checked><span>公開SNS <small>ハッシュタグを付けて公開投稿</small></span></label>
+          <label><input type="radio" name="destination" value="line"><span>LINEで友だちに送る <small>個人の方とのトーク</small></span></label>
         </fieldset>
         <h2 class="share-subheading">投稿文を確認</h2>
         <textarea id="post-preview" readonly aria-label="投稿先に応じた投稿文"></textarea>
@@ -117,23 +128,17 @@
         <p id="share-unavailable" class="section-note" hidden>画像付き共有に対応していない端末です。上の補足から画像を表示し、投稿文をコピーしてご利用ください。</p>
         <p id="operation-status" class="operation-status" role="status" aria-live="polite"></p>
       </section>
-      <section class="panel steps"><h2>参加手順</h2><ol>
-        <li>免許証画像を添えて、SNSやLINEでシェア</li>
-        <li>投稿・送信した画面をスクリーンショット</li>
-        <li>お問い合わせ窓口へスクリーンショットを送付</li>
-        <li>運営で確認後、100ptを加算</li>
-      </ol></section>
       <div class="share-footer">
+        <p class="screenshot-note">スクリーンショットは画面全体を切り取らずに。公開SNSではアカウント名と投稿内容、LINEでは送信先と送信内容が分かる状態でお送りください。</p>
         <a id="contact-link" class="button contact" aria-disabled="true">お問い合わせ窓口へ</a>
         <button type="button" class="text-link" id="back-result">結果に戻る</button>
       </div>
       <section class="panel conditions"><h2>詳しい参加条件</h2>
-        <h3>公開SNSでのシェア</h3><p id="eligible-sns" class="section-note" hidden></p>
-        <p>免許証画像を添えて、投稿文に「#PR」「#CLEARシェアラボ」を入れてご投稿ください。運営で確認できるよう、確認が完了するまではアカウントと投稿を公開状態にしていただけますと幸いです。</p>
-        <h3>LINEでのシェア</h3><p>ご友人やご家族など、CLEAR公式アカウント以外の方とのトークが対象です。ハッシュタグの記載は不要です。</p>
-        <h3>スクリーンショットについて</h3><p>シェア後の画面全体を、切り取らずにお送りいただけますと確認がスムーズです。公開SNSではアカウント名と投稿内容、LINEでは送信先と送信内容が分かる状態でお願いいたします。</p>
-        <h3>ポイントについて</h3><p>内容を確認後、運営より100ptを加算いたします。確認状況によっては、加算が翌日になる場合がございます。お受け取りは、今回のイベントにつきCLEARの1アカウント1回までとなります。</p>
-        <h3>対象について</h3><p>CLEAR公式アカウント宛へのシェアは、対象に含まれません。</p>
+        <div data-condition="public"><h3>公開SNSでのシェア</h3><p id="eligible-sns" class="section-note" hidden></p>
+          <p>免許証画像を添えて、投稿文に「#PR」「#CLEARシェアラボ」を入れてご投稿ください。運営で確認できるよう、確認が完了するまではアカウントと投稿を公開状態にしていただけますと幸いです。</p></div>
+        <div data-condition="line" hidden><h3>LINEでのシェア</h3>
+          <p>ご友人やご家族など、個人の方とのトークが対象です。公式アカウントへの送信は対象外となります。</p><p>LINEではハッシュタグの記載は不要です。</p></div>
+        <h3>ポイントについて</h3><p>内容を確認後、運営より100ptを加算いたします。確認状況によっては、加算が翌日になる場合がございます。お受け取りはお一人様1回までです。</p>
       </section>
     </section>
     <div id="image-preview" class="image-preview" hidden role="dialog" aria-modal="true" aria-label="保存用の免許証画像">
@@ -143,6 +148,6 @@
     </div>
   </main>
   <script src="config.js"></script>
-  <script type="module" src="app.mjs?v=20261104c"></script>
+  <script type="module" src="app.mjs?v=20261104d"></script>
 </body>
 </html>
