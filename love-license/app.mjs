@@ -2,6 +2,7 @@ import {TYPES, QUESTIONS, judge, postText} from "./diagnosis.mjs?v=20261104b";
 
 const KEY = "clear-love-license-5x7-v1";
 const MAX_NAME = 12;
+const CARD_LAYOUT_VERSION = "one-line-v2";
 const FONT = '"Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif';
 const CONFIG = window.LOVE_LICENSE_CONFIG || {};
 const $ = selector => document.querySelector(selector);
@@ -155,11 +156,6 @@ function fitOneLine(ctx,text,x,y,maxWidth,initial,min,weight=900) {
   if (size<min) throw new Error("文字が枠に収まりませんでした");
   ctx.fillText(text,x,y);
 }
-const TYPE_LINES={
-  A:["好きなら直進、","アクセル型"],B:["脈あり待ちの","信号待ち型"],
-  C:["友達レーンで","周回型"],D:["本音を聞いて","ルート相談型"],
-  E:["ときめくほど","急ブレーキ型"]
-};
 const FIELD_LINES={
   "会いたい気持ちを、お誘いに変える":["会いたい気持ちを、","お誘いに変える"],
   "次の予定、まだ前のデート中です":["次の予定、まだ","前のデート中です"],
@@ -180,15 +176,20 @@ function drawField(ctx,text,centerY) {
   lines.forEach((line,index)=>fitOneLine(ctx,line,652,first+index*gap,625,43,38,800));
 }
 function drawType(ctx,type) {
-  const lines=TYPE_LINES[type.id];
-  if (!lines || lines.join("")!==type.name) throw new Error("タイプ名が一致しません");
-  ctx.fillStyle="#192c56";ctx.textAlign="center";ctx.textBaseline="middle";
-  lines.forEach((line,index)=>fitOneLine(ctx,line,975,238+index*59,940,60,54));
+  const size=72;
+  ctx.fillStyle="#192c56";ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  ctx.font="900 "+size+"px "+FONT;
+  const metrics=ctx.measureText(type.name);
+  if (metrics.width>920) throw new Error("タイプ名が1行で枠に収まりませんでした");
+  const ascent=Number.isFinite(metrics.actualBoundingBoxAscent)?metrics.actualBoundingBoxAscent:size*.8;
+  const descent=Number.isFinite(metrics.actualBoundingBoxDescent)?metrics.actualBoundingBoxDescent:size*.1;
+  ctx.fillText(type.name,975,267+(ascent-descent)/2);
+  ctx.textBaseline="middle";
 }
 function makeBlob(canvas) {
   return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("PNGを作れませんでした")),"image/png"));
 }
-function imageKey() {return state.resultId+"|"+state.date+"|"+state.name;}
+function imageKey() {return CARD_LAYOUT_VERSION+"|"+state.resultId+"|"+state.date+"|"+state.name;}
 async function generate(snapshot) {
   const [base,ria]=await assets();
   const type=typeById(snapshot.resultId);
