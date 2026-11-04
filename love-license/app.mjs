@@ -57,6 +57,17 @@ function showScreen() {
   if (screen==="quiz") renderQuiz();
   if (screen==="result") { renderResult();ensureImage().catch(()=>{}); }
   if (screen==="share") { updateShareControls();ensureImage().catch(()=>{}); }
+  if (screen==="home") {
+    const fromHeader=!!document.activeElement?.closest(".home-link");
+    cancelAnswerTimer();updateHomeControls();
+    if (fromHeader) $("#start-button").focus({preventScroll:true});
+  }
+}
+
+function updateHomeControls() {
+  const answered=state.answers.some(answer=>answer!==null);
+  $("#start-button").textContent=state.resultId?"診断結果を見る":answered?"診断を続ける":"運転スタート";
+  $("#restart-button").hidden=!answered&&!state.resultId;
 }
 
 function renderQuiz() {
@@ -134,55 +145,45 @@ function assets() {
   ]);
   return assetsPromise;
 }
-function fitOneLine(ctx,text,x,y,maxWidth,initial,min) {
+function fitOneLine(ctx,text,x,y,maxWidth,initial,min,weight=900) {
   let size=initial;
   while (size>=min) {
-    ctx.font="900 "+size+"px "+FONT;
+    ctx.font=weight+" "+size+"px "+FONT;
     if (ctx.measureText(text).width<=maxWidth) break;
     size--;
   }
   if (size<min) throw new Error("文字が枠に収まりませんでした");
   ctx.fillText(text,x,y);
 }
-function wrapAtWidth(ctx,text,maxWidth) {
-  const glyphs=chars(text);
-  const greedy=[];
-  let current="";
-  for (const glyph of glyphs) {
-    if (current && ctx.measureText(current+glyph).width>maxWidth) {greedy.push(current);current=glyph;}
-    else current+=glyph;
-  }
-  if (current) greedy.push(current);
-  if (greedy.length!==2) return greedy;
-  let best=greedy,score=Infinity;
-  for (let i=2;i<=glyphs.length-2;i++) {
-    const a=glyphs.slice(0,i).join(""),b=glyphs.slice(i).join("");
-    const aw=ctx.measureText(a).width,bw=ctx.measureText(b).width;
-    if (aw>maxWidth||bw>maxWidth||/^[、。！？）」]/.test(b)) continue;
-    const candidate=Math.abs(aw-bw)-(a.endsWith("、")||a.endsWith("。")?16:0);
-    if (candidate<score) {score=candidate;best=[a,b];}
-  }
-  return best;
-}
+const TYPE_LINES={
+  A:["好きなら直進、","アクセル型"],B:["脈あり待ちの","信号待ち型"],
+  C:["友達レーンで","周回型"],D:["本音を聞いて","ルート相談型"],
+  E:["ときめくほど","急ブレーキ型"]
+};
+const FIELD_LINES={
+  "会いたい気持ちを、お誘いに変える":["会いたい気持ちを、","お誘いに変える"],
+  "次の予定、まだ前のデート中です":["次の予定、まだ","前のデート中です"],
+  "相手の好意を確かめて、一歩進む":["相手の好意を","確かめて、一歩進む"],
+  "気軽な会話で、親しさを育てる":["気軽な会話で、","親しさを育てる"],
+  "いい雰囲気も、つい冗談で通過":["いい雰囲気も、","つい冗談で通過"],
+  "お互いの希望を言葉にして進む":["お互いの希望を","言葉にして進む"],
+  "行き先相談で、出発が延びがち":["行き先相談で、","出発が延びがち"],
+  "気持ちが追いつくペースで進む":["気持ちが追いつく","ペースで進む"],
+  "待っていたお誘いで、一時停止":["待っていたお誘いで、","一時停止"]
+};
 function drawField(ctx,text,centerY) {
-  for (let size=43;size>=32;size--) {
-    ctx.font="800 "+size+"px "+FONT;
-    const lines=wrapAtWidth(ctx,text,638);
-    if (lines.length<=2) {
-      const gap=size*1.38;
-      const first=centerY-(lines.length-1)*gap/2;
-      lines.forEach((line,index)=>ctx.fillText(line,325,first+index*gap));
-      return;
-    }
-  }
-  throw new Error("カードの文章が枠に収まりませんでした");
+  const lines=FIELD_LINES[text]||[text];
+  if (lines.join("")!==text) throw new Error("カードの文章が一致しません");
+  const gap=53;
+  const first=centerY-(lines.length-1)*gap/2;
+  ctx.textAlign="center";
+  lines.forEach((line,index)=>fitOneLine(ctx,line,652,first+index*gap,625,43,38,800));
 }
-function drawType(ctx,name) {
-  const comma=name.indexOf("、");
-  const lines=comma>=0?[name.slice(0,comma+1),name.slice(comma+1)]:[name];
-  ctx.fillStyle="#192c56";ctx.textAlign="left";ctx.textBaseline="middle";
-  if (lines.length===1) fitOneLine(ctx,lines[0],495,288,940,66,55);
-  else lines.forEach((line,index)=>fitOneLine(ctx,line,495,245+index*55,940,57,50));
+function drawType(ctx,type) {
+  const lines=TYPE_LINES[type.id];
+  if (!lines || lines.join("")!==type.name) throw new Error("タイプ名が一致しません");
+  ctx.fillStyle="#192c56";ctx.textAlign="center";ctx.textBaseline="middle";
+  lines.forEach((line,index)=>fitOneLine(ctx,line,975,238+index*59,940,60,54));
 }
 function makeBlob(canvas) {
   return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("PNGを作れませんでした")),"image/png"));
@@ -198,16 +199,21 @@ async function generate(snapshot) {
   if (!ctx) throw new Error("画像生成を利用できません");
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.drawImage(base,0,0);
+  // 印字済みの見出しを元画像のまま各欄の縦中央へ移す。
+  ctx.drawImage(base,500,215,347,76,98,215,347,76);
+  ctx.drawImage(base,98,218,347,62,98,238,347,62);
+  ctx.drawImage(base,1010,345,12,455,1010,345,78,455);
+  ctx.drawImage(base,1022,445,62,345,1022,400,62,345);
   // 正式見本の写真欄にある共通リアちゃんのみを使う。
   ctx.drawImage(ria,641,187,240,288,1095,350,380,456);
-  ctx.fillStyle="#192c56";ctx.textAlign="left";ctx.textBaseline="middle";
-  if (snapshot.name.trim()) fitOneLine(ctx,snapshot.name,331,124,622,50,32);
-  fitOneLine(ctx,snapshot.date,1217,124,252,36,29);
-  drawType(ctx,type.name);
+  ctx.fillStyle="#192c56";ctx.textAlign="center";ctx.textBaseline="middle";
+  if (snapshot.name.trim()) fitOneLine(ctx,snapshot.name,653,124,625,50,32);
+  fitOneLine(ctx,snapshot.date,1334,124,263,36,29);
+  drawType(ctx,type);
   ctx.fillStyle="#192c56";
   drawField(ctx,type.lead,426);
   drawField(ctx,type.skill,619);
-  drawField(ctx,type.caution,825);
+  drawField(ctx,type.caution,830);
   return makeBlob(canvas);
 }
 function imageBusy(busy) {
@@ -291,6 +297,7 @@ function updatePostPreview() {
   $("#native-share").disabled=!text||!imageBlob;
   $("#copy-post").disabled=!text;
   $$('[data-condition]').forEach(section=>section.hidden=section.dataset.condition!==destination());
+  $("#line-inline-note").hidden=destination()!=="line";
 }
 function openImagePreview() {
   if (!imageBlob || renderedKey!==imageKey()) {saveStatus("免許証画像を準備中です。少し待ってからお試しください。");return;}
@@ -312,7 +319,10 @@ function canShareFile(file) {
 }
 function updateShareControls() {
   updatePostPreview();
-  $("#share-unavailable").hidden=canShareFile(preparedFile());
+  const supported=canShareFile(preparedFile());
+  $("#share-unavailable").hidden=supported;
+  $("#result-save-note").textContent=supported?"共有メニューから『画像を保存』を選んでください。":"ボタンを押すと画像を大きく表示します。長押しで保存できます。";
+  $("#share-save-note").textContent=supported?"共有メニューから『画像を保存』を選んでください。":"ボタンを押すと画像を大きく表示します。長押し保存や、補足欄のPNGダウンロードも利用できます。";
   const sns=$("#eligible-sns");
   if (Array.isArray(CONFIG.eligibleSns)&&CONFIG.eligibleSns.length) {
     sns.hidden=false;sns.textContent="対象SNS："+CONFIG.eligibleSns.join("・");
@@ -325,13 +335,27 @@ function updateShareControls() {
   } catch {contact.removeAttribute("href");contact.setAttribute("aria-disabled","true");}
 }
 
-$("#start-button").addEventListener("click",()=>{
+$("#start-button").addEventListener("click",()=>navigate(state.resultId?"result":"quiz"));
+$(".home-link").addEventListener("click",event=>{event.preventDefault();cancelAnswerTimer();navigate("home");});
+$("#restart-button").addEventListener("click",()=>{
+  const dialog=$("#restart-dialog");
+  if (typeof dialog.showModal==="function") {dialog.returnValue="";dialog.showModal();}
+  else if (confirm("保存済みの回答と診断結果を消して、最初から診断しますか？")) resetDiagnosis();
+});
+$("#restart-dialog").addEventListener("close",event=>{
+  if (event.currentTarget.returnValue==="confirm") resetDiagnosis();
+});
+function resetDiagnosis() {
   cancelAnswerTimer();
   state=blankState();persist();
   renderedKey="";imageBlob=null;
+  if (imageURL) {URL.revokeObjectURL(imageURL);imageURL=null;}
+  $$('[data-license-image]').forEach(img=>img.removeAttribute('src'));
+  $("#preview-image").removeAttribute('src');
+  $("#download-image").removeAttribute('href');
   updateProgress();
   navigate("quiz");
-});
+}
 $("#show-participation").addEventListener("click",()=>{
   const panel=$("#participation-panel");
   panel.hidden=!panel.hidden;

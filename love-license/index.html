@@ -5,30 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#e9f7ff">
   <title>恋愛運転免許証｜CLEAR シェアラボ 第3回</title>
-  <link rel="stylesheet" href="styles.css?v=20261104d">
+  <link rel="stylesheet" href="styles.css?v=20261104f">
 </head>
 <body data-screen="home">
   <header class="site-header">
     <div class="header-inner">
-      <span>CLEAR シェアラボ 第3回</span>
-      <img src="assets/logo-title.png" alt="恋愛運転免許証">
+      <a class="home-link" href="#home" aria-label="この診断のスタート画面に戻る"><span>CLEAR シェアラボ 第3回</span><img src="assets/logo-title.png" alt="恋愛運転免許証"></a>
       <button type="button" class="text-link back-question" id="back-question" hidden>ひとつ前に戻る</button>
     </div>
   </header>
   <main class="site-main">
     <section id="home-screen" class="screen">
       <div class="home-hero">
-        <img class="home-logo" src="assets/logo-full.png" alt="SNSシェアイベント 恋愛運転免許証">
-        <p class="home-subtitle">あなたの恋の進め方を診断</p>
-        <div class="hero-scene" aria-hidden="true">
-          <div class="hill hill-left"></div><div class="hill hill-right"></div>
-          <div class="road"><span class="lane lane-left"></span><span class="lane lane-right"></span></div>
-          <img class="hero-sign hero-sign-left" src="assets/sign-turn.png" alt="">
-          <img class="hero-sign hero-sign-right" src="assets/sign-heart.png" alt="">
-          <img class="hero-car" src="assets/driving.png" alt="">
-        </div>
-        <button type="button" class="button primary" id="start-button">運転スタート</button>
-        <button type="button" class="text-link" id="show-participation" aria-expanded="false" aria-controls="participation-panel">参加方法を見る</button>
+        <img class="home-poster" src="assets/start-background.png" alt="SNSシェアイベント 恋愛運転免許証。道路を走るリアちゃんたち">
+        <p class="visually-hidden">あなたの恋の進め方を診断</p>
+        <div class="home-actions"><button type="button" class="button primary" id="start-button">運転スタート</button>
+          <div class="home-links"><button type="button" class="text-link" id="restart-button" hidden>最初から診断する</button><button type="button" class="text-link" id="show-participation" aria-expanded="false" aria-controls="participation-panel">参加方法を見る</button></div></div>
       </div>
       <section id="participation-panel" class="panel participation" hidden>
         <h2>参加方法</h2>
@@ -74,17 +66,17 @@
       </div>
       <section class="panel name-panel">
         <label class="section-title" for="license-name">免許証に載せるお名前</label>
-        <p class="section-note">任意・ニックネーム可。シェア画像に表示されます。</p>
-        <input id="license-name" type="text" inputmode="text" autocomplete="off" maxlength="40" aria-describedby="name-limit" placeholder="空欄でもOK">
+        <p id="name-help" class="section-note">任意・ニックネーム可。お名前なしでも保存できます。入力したお名前はシェア画像に表示されます。</p>
+        <input id="license-name" type="text" inputmode="text" autocomplete="off" maxlength="40" aria-describedby="name-help name-limit" placeholder="空欄でもOK">
         <p id="name-limit" class="limit">12文字まで · <span id="name-count">0</span>/12文字</p>
       </section>
       <section class="panel editorial"><h2>総評</h2><div id="summary"></div></section>
       <section class="panel tip"><h2>安全運転のコツ</h2><p id="tip"></p></section>
       <div class="result-actions">
         <button type="button" class="button primary" id="to-share">シェアの方法を見る</button>
-        <button type="button" class="button secondary" data-save>画像だけの共有メニューを開く</button>
+        <button type="button" class="button secondary" data-save aria-describedby="result-save-note">免許証画像を保存</button>
       </div>
-      <p class="section-note save-note">対応端末では共有メニューから「画像を保存」などを選べます。写真アプリへの保存は端末の操作で行います。</p>
+      <p id="result-save-note" class="section-note save-note">共有メニューから『画像を保存』を選んでください。</p>
       <p id="result-status" class="operation-status" role="status" aria-live="polite"></p>
       <p class="fine-print">※本コンテンツは恋愛診断です。実際の運転免許証ではなく、身分証明書としては使用できません。</p>
     </section>
@@ -110,16 +102,18 @@
         <h2>投稿先を選ぶ</h2>
         <fieldset class="destination-options"><legend class="visually-hidden">投稿先</legend>
           <label><input type="radio" name="destination" value="public" checked><span>公開SNS <small>ハッシュタグを付けて公開投稿</small></span></label>
-          <label><input type="radio" name="destination" value="line"><span>LINEで友だちに送る <small>個人の方とのトーク</small></span></label>
+          <label><input type="radio" name="destination" value="line" aria-describedby="line-inline-note"><span>LINEで友だちに送る <small>個人の方とのトーク</small></span></label>
         </fieldset>
+        <p id="line-inline-note" class="line-inline-note" hidden>ご友人やご家族など、個人の方とのトークが対象です。公式アカウントへの送信は対象外となります。</p>
         <h2 class="share-subheading">投稿文を確認</h2>
         <textarea id="post-preview" readonly aria-label="投稿先に応じた投稿文"></textarea>
         <button type="button" class="button primary" id="native-share">画像付きで共有する</button>
         <p class="section-note">共有先で画像と本文を確認してください。端末やアプリによって片方が引き継がれない場合があります。</p>
         <div class="share-secondary">
-          <button type="button" class="button secondary" data-save>画像だけの共有メニューを開く</button>
+          <button type="button" class="button secondary" data-save aria-describedby="share-save-note">免許証画像を保存</button>
           <button type="button" class="button secondary" id="copy-post">投稿文をコピーする</button>
         </div>
+        <p id="share-save-note" class="section-note save-note">共有メニューから『画像を保存』を選んでください。</p>
         <details class="fallback-details"><summary>共有メニューが使えない・保存項目が見つからない場合</summary>
           <p>免許証画像を大きく表示し、画像を長押しして保存できます。投稿文をコピーし、SNSやLINEで画像を添えてください。</p>
           <button type="button" class="button secondary" data-preview>保存用の画像を表示</button>
@@ -129,7 +123,7 @@
         <p id="operation-status" class="operation-status" role="status" aria-live="polite"></p>
       </section>
       <div class="share-footer">
-        <p class="screenshot-note">スクリーンショットは画面全体を切り取らずに。公開SNSではアカウント名と投稿内容、LINEでは送信先と送信内容が分かる状態でお送りください。</p>
+        <p class="screenshot-note">スクリーンショットは、画面全体を切り取らずに撮影してください。公開SNSではアカウント名と投稿内容、LINEでは送信先と送信内容が分かる状態でお送りください。</p>
         <a id="contact-link" class="button contact" aria-disabled="true">お問い合わせ窓口へ</a>
         <button type="button" class="text-link" id="back-result">結果に戻る</button>
       </div>
@@ -137,10 +131,17 @@
         <div data-condition="public"><h3>公開SNSでのシェア</h3><p id="eligible-sns" class="section-note" hidden></p>
           <p>免許証画像を添えて、投稿文に「#PR」「#CLEARシェアラボ」を入れてご投稿ください。運営で確認できるよう、確認が完了するまではアカウントと投稿を公開状態にしていただけますと幸いです。</p></div>
         <div data-condition="line" hidden><h3>LINEでのシェア</h3>
-          <p>ご友人やご家族など、個人の方とのトークが対象です。公式アカウントへの送信は対象外となります。</p><p>LINEではハッシュタグの記載は不要です。</p></div>
+          <p>個人の方とのトークが対象です（公式アカウント宛は対象外）。LINEではハッシュタグの記載は不要です。</p></div>
         <h3>ポイントについて</h3><p>内容を確認後、運営より100ptを加算いたします。確認状況によっては、加算が翌日になる場合がございます。お受け取りはお一人様1回までです。</p>
       </section>
     </section>
+    <dialog id="restart-dialog" aria-labelledby="restart-title">
+      <form method="dialog">
+        <h2 id="restart-title">最初から診断しますか？</h2>
+        <p>保存済みの回答と診断結果を消します。</p>
+        <div class="restart-dialog-actions"><button type="submit" class="button secondary" value="cancel">やめる</button><button type="submit" class="button primary" value="confirm">消して最初から診断する</button></div>
+      </form>
+    </dialog>
     <div id="image-preview" class="image-preview" hidden role="dialog" aria-modal="true" aria-label="保存用の免許証画像">
       <div class="image-preview-inner"><button type="button" id="close-preview" class="button secondary">画像を閉じる</button>
         <p>免許証画像を長押しし、端末のメニューから保存してください。写真アプリへの保存は端末側で選びます。</p>
@@ -148,6 +149,6 @@
     </div>
   </main>
   <script src="config.js"></script>
-  <script type="module" src="app.mjs?v=20261104d"></script>
+  <script type="module" src="app.mjs?v=20261104f"></script>
 </body>
 </html>
