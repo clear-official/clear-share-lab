@@ -1,4 +1,4 @@
-import {TYPES, QUESTIONS, judge, postText} from "./diagnosis.mjs";
+import {TYPES, QUESTIONS, judge, postText} from "./diagnosis.mjs?v=20261104b";
 
 const KEY = "clear-love-license-5x7-v1";
 const MAX_NAME = 12;
@@ -50,6 +50,7 @@ function showScreen() {
   if (!["home","quiz","result","share"].includes(screen)) screen="home";
   if ((screen==="result"||screen==="share") && !state.resultId) screen="home";
   $$(".screen").forEach(node=>node.hidden=node.id!==screen+"-screen");
+  if (screen!=="quiz") $(".quiz-scene").dataset.active="false";
   document.title="恋愛運転免許証｜"+({home:"診断",quiz:"質問",result:"診断結果",share:"シェアで100pt"}[screen]);
   if (screen==="quiz") renderQuiz();
   if (screen==="result") { renderResult();ensureImage().catch(()=>{}); }
@@ -60,7 +61,7 @@ function renderQuiz() {
   const q=QUESTIONS[state.questionIndex];
   $("#quiz-intro").hidden=state.questionIndex!==0;
   $("#quiz-progress").textContent=(state.questionIndex+1)+" / 7";
-  $("#quiz-title").textContent=q.title;
+  $("#quiz-number").textContent="第"+(state.questionIndex+1)+"問";
   $("#quiz-prompt").textContent=q.prompt;
   $("#answer-status").textContent="";
   $("#back-question").hidden=state.questionIndex===0;
@@ -204,6 +205,7 @@ function imageBusy(busy) {
   $$("[data-save]").forEach(button=>button.disabled=busy);
   $("#to-share").disabled=busy;
   $("#native-share").disabled=busy||!postText(state.resultId,CONFIG.formalUrl,"public");
+  if (!busy) updateShareControls();
 }
 function imageError(error) {
   $("#image-error").hidden=false;
@@ -227,6 +229,10 @@ async function ensureImage() {
           img.src=imageURL;
           img.alt=typeById(snapshot.resultId).name+"の恋愛運転免許証"+(snapshot.name.trim()?"、氏名"+snapshot.name:"");
         });
+        $("#preview-image").src=imageURL;
+        const download=$("#download-image");
+        download.href=imageURL;
+        download.download="恋愛運転免許証_"+snapshot.date.replaceAll(".","")+".png";
         if (previous) setTimeout(()=>URL.revokeObjectURL(previous),1200);
         $("#image-error").hidden=true;
       }).finally(()=>{generation=null;imageBusy(false);});
@@ -246,11 +252,38 @@ function renderResult() {
   $("#tip").textContent=type.tip;
 }
 function status(message) {$("#operation-status").textContent=message;}
-function updateShareControls() {
-  const text=postText(state.resultId,CONFIG.formalUrl,"public");
-  $("#native-share").disabled=!text;
+function saveStatus(message) {
+  if ($("#share-screen").hidden) $("#result-status").textContent=message;
+  else status(message);
+}
+function destination() {return document.querySelector('input[name="destination"]:checked')?.value||"public";}
+function updatePostPreview() {
+  const text=postText(state.resultId,CONFIG.formalUrl,destination());
+  $("#post-preview").value=text||"";
+  $("#native-share").disabled=!text||!imageBlob;
   $("#copy-post").disabled=!text;
-  $("#share-unavailable").hidden=!!text;
+}
+function openImagePreview() {
+  if (!imageBlob || renderedKey!==imageKey()) {saveStatus("免許証画像を準備中です。少し待ってからお試しください。");return;}
+  $("#image-preview").hidden=false;
+  document.body.classList.add("preview-open");
+  $("#close-preview").focus();
+}
+function closeImagePreview() {
+  $("#image-preview").hidden=true;
+  document.body.classList.remove("preview-open");
+}
+function preparedFile() {
+  if (!imageBlob || renderedKey!==imageKey() || typeof File!=="function") return null;
+  return new File([imageBlob],"恋愛運転免許証_"+state.date.replaceAll(".","")+".png",{type:"image/png"});
+}
+function canShareFile(file) {
+  try {return !!file && typeof navigator.share==="function" && typeof navigator.canShare==="function" && navigator.canShare({files:[file]});}
+  catch {return false;}
+}
+function updateShareControls() {
+  updatePostPreview();
+  $("#share-unavailable").hidden=canShareFile(preparedFile());
   const sns=$("#eligible-sns");
   if (Array.isArray(CONFIG.eligibleSns)&&CONFIG.eligibleSns.length) {
     sns.hidden=false;sns.textContent="対象SNS："+CONFIG.eligibleSns.join("・");
@@ -296,40 +329,42 @@ $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{
   if (operationLocked) return;
   operationLocked=true;
   try {
-    await ensureImage();
-    const link=document.createElement("a");
-    link.href=imageURL;link.download="恋愛運転免許証_"+state.date.replaceAll(".","")+".png";
-    document.body.append(link);link.click();link.remove();
-    const message="画像の保存操作を開始しました。保存先をご確認ください。";
-    if ($("#share-screen").hidden) $("#result-status").textContent=message;else status(message);
-  } catch {
-    const message="画像を保存できませんでした。画像生成を再試行してください。";
-    if ($("#share-screen").hidden) $("#result-status").textContent=message;else status(message);
+    const file=preparedFile();
+    if (!file) {saveStatus("免許証画像を準備中です。少し待ってからお試しください。");return;}
+    if (!canShareFile(file)) {openImagePreview();saveStatus("この端末では画像ファイルの共有を開けません。表示した画像を長押しして保存できます。");return;}
+    await navigator.share({files:[file]});
+    saveStatus("共有メニューを閉じました。保存先は端末でご確認ください。");
+  } catch(error) {
+    if (error?.name==="AbortError") saveStatus("共有メニューを閉じました。");
+    else {openImagePreview();saveStatus("共有メニューを開けませんでした。表示した画像を長押しして保存できます。");}
   } finally {operationLocked=false;}
 }));
 $("#native-share").addEventListener("click",async()=>{
   if (operationLocked) return;
   operationLocked=true;
   try {
-    const text=postText(state.resultId,CONFIG.formalUrl,"public");
+    const text=postText(state.resultId,CONFIG.formalUrl,destination());
     if (!text) {status("共有操作は現在ご利用いただけません。");return;}
-    let blob;
-    try {blob=await ensureImage();}
-    catch {status("共有画像を生成できませんでした。画像生成を再試行してください。");return;}
-    const file=new File([blob],"恋愛運転免許証.png",{type:"image/png"});
-    if (!navigator.share || !navigator.canShare?.({files:[file]})) {
-      status("この環境では画像付き共有を開けません。画像を保存し、投稿文をコピーして添付してください。");
+    const file=preparedFile();
+    if (!canShareFile(file)) {
+      $(".fallback-details").open=true;
+      status("この端末では画像付き共有を開けません。画像を表示し、投稿文をコピーして添付してください。");
       return;
     }
     await navigator.share({files:[file],text});
     status("共有画面を閉じました。投稿先で画像と本文を確認してください。");
   } catch(error) {
-    if (error?.name==="AbortError") status("共有を中止しました。必要ならもう一度お試しください。");
-    else status("共有画面を開けませんでした。画像を保存して手動で添付してください。");
+    if (error?.name==="AbortError") status("共有画面を閉じました。");
+    else {$(".fallback-details").open=true;status("共有画面を開けませんでした。画像を表示し、投稿文をコピーして添付してください。");}
   } finally {operationLocked=false;}
 });
+$$('input[name="destination"]').forEach(input=>input.addEventListener("change",updatePostPreview));
+$$('[data-preview]').forEach(button=>button.addEventListener("click",openImagePreview));
+$("#close-preview").addEventListener("click",closeImagePreview);
+$("#image-preview").addEventListener("click",event=>{if(event.target.id==="image-preview")closeImagePreview();});
+addEventListener("keydown",event=>{if(event.key==="Escape"&&!$("#image-preview").hidden)closeImagePreview();});
 $("#copy-post").addEventListener("click",async()=>{
-  const text=postText(state.resultId,CONFIG.formalUrl,$("#copy-kind").value);
+  const text=postText(state.resultId,CONFIG.formalUrl,destination());
   if (!text) {status("投稿文のコピーは現在ご利用いただけません。");return;}
   try {
     if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
@@ -339,7 +374,7 @@ $("#copy-post").addEventListener("click",async()=>{
       const copied=document.execCommand("copy");field.remove();
       if (!copied) throw new Error("copy");
     }
-    status(($("#copy-kind").value==="line"?"LINE用":"公開SNS用")+"の投稿文をコピーしました。");
+    status((destination()==="line"?"LINE用":"公開SNS用")+"の投稿文をコピーしました。");
   } catch {
     let field=$("#manual-post");
     if (!field) {
@@ -355,4 +390,8 @@ $("#contact-link").addEventListener("click",event=>{
   if (event.currentTarget.getAttribute("aria-disabled")==="true") event.preventDefault();
 });
 addEventListener("hashchange",showScreen);
+const sceneObserver=new IntersectionObserver(entries=>{
+  for (const entry of entries) $(".quiz-scene").dataset.active=String(entry.isIntersecting&&!$("#quiz-screen").hidden);
+},{threshold:.05});
+sceneObserver.observe($(".quiz-scene"));
 showScreen();

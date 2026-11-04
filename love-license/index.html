@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#e9f7ff">
   <title>恋愛運転免許証｜Clear シェアラボ 第3回</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20261104b">
 </head>
 <body>
   <header class="site-header">
@@ -26,17 +26,17 @@
           <img class="hero-sign hero-sign-right" src="assets/sign-heart.png" alt="">
           <img class="hero-car" src="assets/driving.png" alt="">
         </div>
-        <p class="point-band">シェアで100ptゲット</p>
         <button type="button" class="button primary" id="start-button">診断をはじめる</button>
+        <p class="point-band">シェアした内容を運営で確認後、100ptを加算します。</p>
         <button type="button" class="text-link" id="show-participation" aria-expanded="false" aria-controls="participation-panel">参加方法を見る</button>
       </div>
       <section id="participation-panel" class="panel participation" hidden>
         <h2>参加方法</h2>
         <ol>
-          <li>診断して免許証画像を保存する</li>
-          <li>画像を添えて、対象のSNSまたはLINEでシェアする</li>
-          <li>シェア後の画面全体をスクリーンショットで撮る</li>
-          <li>お問い合わせ窓口へ送り、運営確認後に100ptを受け取る</li>
+          <li>診断して免許証画像をつくる</li>
+          <li>画像を添えて、SNSやLINEでシェア</li>
+          <li>投稿・送信した画面をスクリーンショット</li>
+          <li>お問い合わせ窓口へ送り、運営で確認後に100ptを加算</li>
         </ol>
       </section>
     </section>
@@ -47,25 +47,30 @@
         <p id="quiz-progress" class="quiz-progress">1 / 7</p>
       </div>
       <div class="panel question-panel">
-        <h1 id="quiz-title"></h1>
-        <p id="quiz-prompt"></p>
+        <p id="quiz-number" class="question-number">第1問</p>
+        <h1 id="quiz-prompt"></h1>
         <div id="quiz-options" class="quiz-options" role="group" aria-label="選択肢"></div>
         <p id="answer-status" class="answer-status" role="status" aria-live="polite"></p>
       </div>
       <button type="button" class="text-link back-question" id="back-question">ひとつ前に戻る</button>
       <div class="quiz-scene" aria-hidden="true">
         <div class="quiz-road"></div>
-        <img class="moving-sign sign-left" src="assets/sign-turn.png" alt="">
-        <img class="moving-sign sign-right" src="assets/sign-heart.png" alt="">
+        <img class="street-item street-left street-turn" src="assets/sign-turn.png" alt="">
+        <img class="street-item street-right street-tree" src="assets/tree.png" alt="">
+        <img class="street-item street-left street-cafe" src="assets/cafe.png" alt="">
+        <img class="street-item street-right street-heart" src="assets/sign-heart.png" alt="">
+        <img class="street-item street-left street-traffic" src="assets/traffic.png" alt="">
+        <img class="street-item street-right street-tree-again" src="assets/tree.png" alt="">
         <img class="quiz-car" src="assets/driving.png" alt="">
       </div>
     </section>
 
     <section id="result-screen" class="screen" hidden>
-      <h1 class="page-heading">あなたの恋愛運転タイプは…</h1>
+      <p class="result-eyebrow">診断完了 · 恋愛運転免許証を発行しました</p>
+      <h1 class="page-heading">あなたの恋愛運転タイプは</h1>
+      <p id="result-type-name" class="result-type-name"></p>
       <figure class="license-block">
         <img class="license-image" data-license-image alt="恋愛運転免許証">
-        <figcaption id="result-type-name"></figcaption>
       </figure>
       <div id="image-error" class="notice error" role="alert" hidden>
         <span>免許証画像を生成できませんでした。</span>
@@ -80,71 +85,68 @@
       <section class="panel editorial"><h2>総評</h2><p id="summary"></p></section>
       <section class="panel tip"><h2>安全運転のコツ</h2><p id="tip"></p></section>
       <div class="result-actions">
-        <button type="button" class="button primary" id="to-share">シェアして100pt</button>
-        <button type="button" class="button secondary" data-save>画像を保存</button>
+        <button type="button" class="button primary" id="to-share">シェアの方法を見る</button>
+        <button type="button" class="button secondary" data-save>画像だけの共有メニューを開く</button>
       </div>
+      <p class="section-note save-note">対応端末では共有メニューから「画像を保存」などを選べます。写真アプリへの保存は端末の操作で行います。</p>
       <p id="result-status" class="operation-status" role="status" aria-live="polite"></p>
       <p class="fine-print">※本コンテンツは恋愛診断です。実際の運転免許証ではなく、身分証明書としては使用できません。</p>
     </section>
 
     <section id="share-screen" class="screen" hidden>
       <h1 class="page-heading">シェアで100pt</h1>
+      <p class="share-lead">免許証画像をシェアして、投稿・送信画面のスクリーンショットをお送りください。運営で確認後、100ptを加算します。</p>
       <figure class="license-block">
         <img class="license-image" data-license-image alt="共有する恋愛運転免許証">
-        <figcaption>あなたの免許証画像</figcaption>
       </figure>
       <section class="panel share-actions">
-        <h2>共有操作</h2>
-        <button type="button" class="button primary" id="native-share">画像付きでシェア</button>
+        <h2>投稿先を選ぶ</h2>
+        <fieldset class="destination-options"><legend class="visually-hidden">投稿先</legend>
+          <label><input type="radio" name="destination" value="public" checked><span>公開SNS <small>#PR と #CLEARシェアラボを付けて投稿</small></span></label>
+          <label><input type="radio" name="destination" value="line"><span>LINEで友だちに送る <small>ハッシュタグなしで送信</small></span></label>
+        </fieldset>
+        <h2 class="share-subheading">投稿文を確認</h2>
+        <textarea id="post-preview" readonly aria-label="投稿先に応じた投稿文"></textarea>
+        <button type="button" class="button primary" id="native-share">画像付きで共有する</button>
+        <p class="section-note">共有先で画像と本文を確認してください。端末やアプリによって片方が引き継がれない場合があります。</p>
         <div class="share-secondary">
-          <button type="button" class="button secondary" data-save>画像を保存</button>
-          <div class="copy-control">
-            <label for="copy-kind">投稿文をコピー</label>
-            <select id="copy-kind" aria-label="投稿文の種類">
-              <option value="public">公開SNS用</option>
-              <option value="line">LINE用</option>
-            </select>
-            <button type="button" class="button secondary" id="copy-post">投稿文をコピー</button>
-          </div>
+          <button type="button" class="button secondary" data-save>画像だけの共有メニューを開く</button>
+          <button type="button" class="button secondary" id="copy-post">投稿文をコピーする</button>
         </div>
-        <p class="section-note">画像を保存 → 投稿文をコピー → SNSやLINEで画像を添付してシェア</p>
-        <p class="section-note">端末や共有先によって、画像と本文の両方が引き継がれない場合があります。共有先で確認してください。</p>
-        <p id="share-unavailable" class="section-note" hidden>共有操作は現在ご利用いただけません。画像の保存はできます。</p>
+        <details class="fallback-details"><summary>共有メニューが使えない・保存項目が見つからない場合</summary>
+          <p>免許証画像を大きく表示し、画像を長押しして保存できます。投稿文をコピーし、SNSやLINEで画像を添えてください。</p>
+          <button type="button" class="button secondary" data-preview>保存用の画像を表示</button>
+          <a class="download-link" id="download-image" download="恋愛運転免許証.png">PNGをダウンロードする</a>
+        </details>
+        <p id="share-unavailable" class="section-note" hidden>画像付き共有に対応していない端末です。上の補足から画像を表示し、投稿文をコピーしてご利用ください。</p>
         <p id="operation-status" class="operation-status" role="status" aria-live="polite"></p>
       </section>
       <section class="panel steps"><h2>参加手順</h2><ol>
-        <li>免許証画像を添えて、対象のSNSまたはLINEでシェア</li>
-        <li>シェア後の画面全体を、切り取らずにスクリーンショットで撮影</li>
-        <li>お問い合わせ窓口へ送信</li>
-        <li>運営確認後、100pt加算</li>
+        <li>免許証画像を添えて、SNSやLINEでシェア</li>
+        <li>投稿・送信した画面をスクリーンショット</li>
+        <li>お問い合わせ窓口へスクリーンショットを送付</li>
+        <li>運営で確認後、100ptを加算</li>
       </ol></section>
-      <section class="conditions">
-        <div class="panel"><h2>公開SNSの条件</h2><p id="eligible-sns" class="section-note" hidden></p><ul>
-          <li>結果カードの画像を添付する</li>
-          <li>投稿文に #PR と #CLEARシェアラボ を入れる</li>
-          <li>運営がアカウントと投稿を確認できる公開状態にする</li>
-          <li>投稿前ではなく、投稿済みの画面を送る</li>
-          <li>アカウント名と投稿内容が分かる画面全体を送る</li>
-        </ul></div>
-        <div class="panel"><h2>LINEの条件</h2><ul>
-          <li>友人や家族など、Clear公式アカウント以外の人とのトークが対象</li>
-          <li>送信先の名前と、送信済みの免許証画像が分かる画面全体を送る</li>
-        </ul></div>
-      </section>
-      <section class="panel common"><h2>共通の条件</h2><ul>
-        <li>Clear公式アカウント宛へのシェアは対象外</li>
-        <li>今回のイベントにつきClearの1アカウント1回まで</li>
-        <li>確認状況により加算が翌日になる場合がある</li>
-        <li>運営確認後に手動で加算する</li>
-        <li>共有ボタンを押した時点では、自動で加算されない</li>
-      </ul></section>
       <div class="share-footer">
         <a id="contact-link" class="button contact" aria-disabled="true">お問い合わせ窓口へ</a>
         <button type="button" class="text-link" id="back-result">結果に戻る</button>
       </div>
+      <section class="panel conditions"><h2>詳しい参加条件</h2>
+        <h3>公開SNSでのシェア</h3><p id="eligible-sns" class="section-note" hidden></p>
+        <p>免許証画像を添えて、投稿文に「#PR」「#CLEARシェアラボ」を入れてご投稿ください。運営で確認できるよう、確認が完了するまではアカウントと投稿を公開状態にしていただけますと幸いです。</p>
+        <h3>LINEでのシェア</h3><p>ご友人やご家族など、Clear公式アカウント以外の方とのトークが対象です。ハッシュタグの記載は不要です。</p>
+        <h3>スクリーンショットについて</h3><p>シェア後の画面全体を、切り取らずにお送りいただけますと確認がスムーズです。公開SNSではアカウント名と投稿内容、LINEでは送信先と送信内容が分かる状態でお願いいたします。</p>
+        <h3>ポイントについて</h3><p>内容を確認後、運営より100ptを加算いたします。確認状況によっては、加算が翌日になる場合がございます。お受け取りは、今回のイベントにつきClearの1アカウント1回までとなります。</p>
+        <h3>対象について</h3><p>Clear公式アカウント宛へのシェアは、対象に含まれません。</p>
+      </section>
     </section>
+    <div id="image-preview" class="image-preview" hidden role="dialog" aria-modal="true" aria-label="保存用の免許証画像">
+      <div class="image-preview-inner"><button type="button" id="close-preview" class="button secondary">画像を閉じる</button>
+        <p>免許証画像を長押しし、端末のメニューから保存してください。写真アプリへの保存は端末側で選びます。</p>
+        <img id="preview-image" alt="長押しで保存する免許証画像"></div>
+    </div>
   </main>
   <script src="config.js"></script>
-  <script type="module" src="app.mjs"></script>
+  <script type="module" src="app.mjs?v=20261104b"></script>
 </body>
 </html>
