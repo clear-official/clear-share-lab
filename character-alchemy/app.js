@@ -16,7 +16,7 @@ function readSavedState(){
     return {screen,index:Number.isInteger(saved.index)?Math.max(0,Math.min(questions.length-1,saved.index)):0,answers:saved.answers,result,kind:saved.kind==='line'?'line':'sns',scrollY:Number.isFinite(saved.scrollY)?Math.max(0,saved.scrollY):0,seenFirst:Boolean(saved.seenFirst)};
   }catch{return null}
 }
-const state = { screen:'start', index:0, answers:Array(questions.length).fill(null), locked:false, seenFirst:false, result:null, kind:'sns', scrollY:0, modalOpen:false, cardBlob:null, cardUrl:null, cardPromise:null, timer:null, scrollTimer:null, workingTimers:[], ...readSavedState() };
+const state = { screen:'start', index:0, answers:Array(questions.length).fill(null), locked:false, seenFirst:false, result:null, kind:'sns', scrollY:0, modalOpen:false, modalScrollY:null, cardBlob:null, cardUrl:null, cardPromise:null, timer:null, scrollTimer:null, workingTimers:[], ...readSavedState() };
 function saveState(){
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify({screen:state.screen,index:state.index,answers:state.answers,kind:state.kind,seenFirst:state.seenFirst,scrollY:state.scrollY}))}catch{}
 }
@@ -130,7 +130,8 @@ async function openSaveModal(){
   if(state.modalOpen)return;
   await ensureCard();
   if(!state.cardUrl){status('カード画像を準備中です。');return}
-  state.scrollY=scrollY;
+  state.modalScrollY=scrollY;
+  state.scrollY=state.modalScrollY;
   saveState();
   const overlay=document.createElement('div');
   overlay.className='save-overlay';
@@ -146,7 +147,20 @@ function closeSaveModal(fromHistory=false){
   document.querySelector('.save-overlay')?.remove();
   document.body.classList.remove('modal-open');
   state.modalOpen=false;
+  state.scrollY=state.modalScrollY;
+  saveState();
   if(!fromHistory&&history.state?.alchemyModal)history.back();
+  else restoreModalScroll();
+}
+function restoreModalScroll(){
+  if(state.modalScrollY===null)return;
+  const target=state.modalScrollY;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    scrollTo({top:target,behavior:'instant'});
+    state.scrollY=scrollY;
+    state.modalScrollY=null;
+    saveState();
+  }));
 }
 async function shareCard(){
   if(!PUBLIC_SITE_URL||!state.cardBlob){status('カード画像を準備中です。');return}
@@ -183,9 +197,9 @@ app.addEventListener('click',event=>{
   else if(action==='store')document.getElementById('store-options').hidden=false;
 });
 document.addEventListener('click',event=>{if(event.target.closest('[data-action="close-save"]'))closeSaveModal()});
-window.addEventListener('popstate',()=>{if(state.modalOpen)closeSaveModal(true)});
-window.addEventListener('scroll',()=>{state.scrollY=scrollY;clearTimeout(state.scrollTimer);state.scrollTimer=setTimeout(saveState,200)},{passive:true});
-window.addEventListener('pagehide',()=>{state.scrollY=scrollY;saveState()});
+window.addEventListener('popstate',()=>{if(state.modalOpen)closeSaveModal(true);else restoreModalScroll()});
+window.addEventListener('scroll',()=>{if(state.modalOpen||state.modalScrollY!==null)return;state.scrollY=scrollY;clearTimeout(state.scrollTimer);state.scrollTimer=setTimeout(saveState,200)},{passive:true});
+window.addEventListener('pagehide',()=>{state.scrollY=state.modalScrollY??scrollY;saveState()});
 if('scrollRestoration' in history)history.scrollRestoration='manual';
 if(history.state?.alchemyModal)history.replaceState(null,'',location.href);
 render(true);
