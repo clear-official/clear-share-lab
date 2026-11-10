@@ -4,8 +4,9 @@ GitHub Pages: https://clear-official.github.io/clear-share-lab/
 
 - `/`：第1回「恋愛通知表」
 - `/recipe/`：第2回「私の隠しレシピ診断」
+- `/character-alchemy/`：「わたしのキャラ錬成」
 
-両コンテンツは静的な HTML・CSS・JavaScript で動作します。画像などの正式素材は `assets/` にあります。
+各コンテンツは静的な HTML・CSS・JavaScript で動作します。画像などの正式素材は `assets/` と各イベント用の素材ディレクトリにあります。
 
 ## 別端末で作業を再開する
 
