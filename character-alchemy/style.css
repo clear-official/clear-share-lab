@@ -49,3 +49,68 @@ button,a{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;o
 @media(max-width:350px){.shell{padding-left:13px;padding-right:13px}.scene{margin-left:-13px;margin-right:-13px}.pixel-face{padding-left:16px;padding-right:16px}.question-text{font-size:18px}.choice{font-size:14px}.screen-title{font-size:22px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.shard-fly,.scene-shards i{animation-duration:.01s}}
 .pixel-label,.mini-title,.screen-title,.progress-label,.feedback,.working-message,.section-heading,.detail-window h3,.share-lead,.share-conditions h3,.share-proof h3,.app-promo h2{font-weight:400}
+
+/* タイトルと設問では装飾の高さを優先して整理し、短い表示領域では自然にスクロールさせる。 */
+body[data-screen="start"] .site-foot,body[data-screen="question"] .site-foot{display:none}
+.start-screen,.question-screen{min-height:100vh;min-height:100svh;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+.start-screen .screen-top{padding-top:8px}
+.start-screen .event-logo{width:min(78%,270px);height:37px;margin-bottom:3px}
+.start-screen .title-art{width:min(80%,280px);height:114px;margin-bottom:-7px}
+.start-screen .scene-start{height:250px}
+.start-screen .scene-ria{width:230px;bottom:-34px}
+.start-screen .message-window{margin-bottom:11px}
+.start-screen .message-window .pixel-face{padding:10px 17px 12px}
+.start-screen .message-window p{line-height:1.6}
+.start-screen .pixel-button{min-height:54px;padding:11px 20px}
+.start-screen .badge-art{width:min(78%,270px);height:38px;margin-top:12px}
+
+.question-screen{display:flex;flex-direction:column}
+.question-screen .screen-top{padding-top:4px}
+.question-logo{width:164px;height:66px;margin:0 auto 4px}
+.question-logo:focus{outline:none}
+.question-logo .asset-crop img{width:127.7%;left:-14.3%;top:-31%}
+.question-screen .progress-wrap{margin-bottom:9px}
+.question-screen .progress-label{font-size:18px;line-height:1.3;margin-bottom:6px}
+.question-screen .progress-cell{height:16px}
+.question-screen .question-window{margin-bottom:10px}
+.question-screen .question-window .pixel-face{padding:10px 16px 12px}
+.question-screen .question-text{font-size:20px;line-height:1.48}
+.question-screen .choice-list{gap:8px;margin-bottom:0}
+.question-screen .choice{min-height:52px;padding:9px 16px 9px 39px;font-size:15px;line-height:1.45}
+.question-screen .back-wrap{margin-top:2px}
+.question-screen .back-wrap:empty{display:none}
+.question-screen .back-link{font-size:14px;line-height:1.4;padding:5px 8px}
+.question-tail{position:relative;flex:1 1 86px;min-height:86px;max-height:105px;margin-top:3px}
+.question-tail .scene-question{height:100%;margin-bottom:0}
+.question-tail .scene-ria{width:90px;bottom:-13px;left:50%}
+.question-tail .scene-edge{display:none}
+.question-tail .scene::before{background-size:100% auto;background-position:center 60%}
+.question-tail .feedback:empty{display:none}
+.question-tail .feedback:not(:empty){position:fixed;z-index:30;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 24px);min-height:0;margin:0;padding:8px 14px;background:#0a2140;border:3px solid #f0d490;line-height:1.5}
+@media(max-width:350px){.question-screen .question-text{font-size:20px}.question-screen .choice{font-size:15px}}
+@media(max-height:700px){
+  .start-screen .event-logo{width:min(72%,250px);height:34px}
+  .start-screen .title-art{width:min(74%,255px);height:103px}
+  .start-screen .scene-start{height:215px}
+  .start-screen .scene-ria{width:202px;bottom:-30px}
+  .question-tail{min-height:72px}
+  .question-tail .scene-ria{width:77px;bottom:-11px}
+}
+
+/* 共有先は形、文字、色で区別する。 */
+.tab-btn{border:3px solid #547d91;background:#102d48;color:#d1e6f0;box-shadow:inset 0 4px #39718a,inset 0 -4px #06192e}
+.tab-btn.active{border-color:#d0f6fa;background:#23788e;color:#fff;box-shadow:inset 0 4px #94e8ed,inset 0 -4px #0f455c}
+.tab-btn.active::before{content:"✓";display:inline-block;margin-right:6px;border:2px solid currentColor;padding:0 3px;line-height:1.15;font-weight:900}
+.tab-btn.active[data-action="line"]{border-color:#b9efca;background:#276b56;box-shadow:inset 0 4px #a8e6bd,inset 0 -4px #104434}
+.pixel-button.share-sns{background:#49c6d9;color:#062438;box-shadow:inset 0 5px #baf7f7,inset 0 -6px #19718b}
+.pixel-button.share-line{background:#76c899;color:#092a25;box-shadow:inset 0 5px #c8f3d1,inset 0 -6px #317a55}
+.share-target-note{margin:-4px 0 5px;text-align:center;color:#c2dae3;font-size:13px;line-height:1.6;font-weight:700}
+
+/* 画像はページ内で表示し、戻る操作で閉じる。 */
+body.modal-open{overflow:hidden}
+.save-overlay{position:fixed;inset:0;z-index:100;display:flex;justify-content:center;align-items:flex-start;overflow:auto;background:#020a1df2;padding:12px 12px max(12px,env(safe-area-inset-bottom))}
+.save-modal{width:min(100%,660px);max-height:calc(100svh - 24px);overflow:auto;padding:16px;background:#0b2445;border:4px solid #6acddb;box-shadow:0 8px 0 #020a19}
+.save-modal h2{font-family:"DotGothic16","Noto Sans JP",sans-serif;font-size:20px;font-weight:400;margin:2px 0 9px}
+.save-modal p{font-size:14px;line-height:1.75;font-weight:700;margin-bottom:13px}
+.save-modal-image{display:block;width:100%;height:auto;image-rendering:pixelated;-webkit-touch-callout:default;user-select:auto}
+.modal-close{position:sticky;top:0;z-index:1;display:block;margin:0 0 7px auto;border:3px solid #fff1bd;background:#efc97a;color:#071a32;padding:7px 12px;font-size:15px;font-weight:900}

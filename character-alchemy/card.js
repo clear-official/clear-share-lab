@@ -14,6 +14,23 @@ const shardArt = {
   empathy: 'shard-empathy.png', idea: 'shard-idea.png', steady: 'shard-steady.png'
 };
 
+const catchLines = {
+  action: ['あなたの一歩が、', '物語を動かす。'],
+  curiosity: ['「気になる」の先に、', '宝物がある。'],
+  empathy: ['そのやさしさが、', '仲間の力になる。'],
+  idea: ['見方を変えて、', '道をひらく。'],
+  steady: ['続けた時間が、', 'あなたの力になる。'],
+  observe: ['小さな気づきで、', '進む道を整える。']
+};
+const skillLines = {
+  action: ['迷って止まった場面に、', '動き出すきっかけをつくる。'],
+  curiosity: ['何気ない毎日から、', 'まだ知らない楽しみを見つける。'],
+  empathy: ['相手の気持ちを受け止め、', 'ほっと話せる空気をつくる。'],
+  idea: ['行き詰まったときも、', '別の角度から突破口を見つける。'],
+  steady: ['一度では届かない目標も、', '少しずつ形にしていく。'],
+  observe: ['状況の変化に気づき、', 'つまずく前に進み方を整える。']
+};
+
 const imageCache = new Map();
 function image(name) {
   if (!imageCache.has(name)) imageCache.set(name, new Promise((resolve, reject) => {
@@ -106,21 +123,14 @@ function magicCircle(ctx, color) {
   ctx.stroke();
 }
 
-function wrapLines(ctx, text, maxWidth) {
-  const lines = []; let line = '';
-  for (const char of text) {
-    if (line && ctx.measureText(line + char).width > maxWidth) { lines.push(line); line = char; }
-    else line += char;
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-function textBlock(ctx, text, x, y, maxWidth, font, lineHeight, maxLines = 3) {
+function centeredLines(ctx, lines, original, x, y, maxWidth, font, lineHeight) {
+  if (lines.join('') !== original) throw new Error(`カード文面が確定済みデータと一致しません: ${original}`);
   ctx.font = font;
-  const lines = wrapLines(ctx, text, maxWidth);
-  for (let i = 0; i < Math.min(lines.length, maxLines); i++) ctx.fillText(lines[i], x, y + lineHeight * i);
-  if (lines.length > maxLines) throw new Error(`カード内の文章が収まりません: ${text}`);
+  ctx.textAlign = 'center';
+  lines.forEach((line, i) => {
+    if (ctx.measureText(line).width > maxWidth) throw new Error(`カード内の文章が収まりません: ${line}`);
+    ctx.fillText(line, x, y + lineHeight * i);
+  });
 }
 
 function gem(ctx, x, y, color) {
@@ -138,6 +148,23 @@ async function traitGem(ctx, key, x, y) {
   const img = await image(file);
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(img, 540, 278, 320, 540, x - 8, y - 27, 48, 58);
+}
+
+async function attributeRow(ctx, key, label, centerX, centerY) {
+  const gap = 16, valueGap = 23, iconWidth = 48;
+  ctx.font = '700 31px "Noto Sans JP",sans-serif';
+  const labelWidth = ctx.measureText(label).width;
+  ctx.font = '800 35px "Noto Sans JP",sans-serif';
+  const valueWidth = ctx.measureText(traits[key].name).width;
+  const start = centerX - (iconWidth + gap + labelWidth + valueGap + valueWidth) / 2;
+  await traitGem(ctx, key, start + 8, centerY);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#d7f4fb';
+  ctx.font = '700 31px "Noto Sans JP",sans-serif';
+  ctx.fillText(label, start + iconWidth + gap + labelWidth / 2, centerY + 14);
+  ctx.fillStyle = traits[key].color;
+  ctx.font = '800 35px "Noto Sans JP",sans-serif';
+  ctx.fillText(traits[key].name, start + iconWidth + gap + labelWidth + valueGap + valueWidth / 2, centerY + 14);
 }
 
 function portrait(ctx, img, key) {
@@ -165,20 +192,23 @@ export async function createResultCard(result) {
   portrait(ctx, person, result.main);
   ctx.drawImage(title, 172, 160, 1204, 480, 406, 22, 390, 155);
 
+  const panelCenter = 833;
   stepWindow(ctx, 518, 190, 630, 480);
-  ctx.textAlign = 'left'; ctx.fillStyle = '#f7fbff';
-  textBlock(ctx, main.catch, 555, 263, 555, '800 40px "Noto Sans JP",sans-serif', 54, 2);
-  ctx.fillStyle = '#54d5e7'; ctx.fillRect(560, 355, 526, 6);
-  ctx.fillStyle = '#d7f4fb'; ctx.font = '700 31px "Noto Sans JP",sans-serif';
-  ctx.fillText('メイン属性', 605, 413); ctx.fillText('サブ属性', 605, 466);
-  await traitGem(ctx, result.main, 558, 399); await traitGem(ctx, result.sub, 558, 452);
-  ctx.fillStyle = main.color; ctx.font = '800 35px "Noto Sans JP",sans-serif'; ctx.fillText(main.name, 805, 413);
-  ctx.fillStyle = sub.color; ctx.fillText(sub.name, 805, 466);
+  ctx.fillStyle = '#f7fbff';
+  centeredLines(ctx, catchLines[result.main], main.catch, panelCenter, 261, 558, '800 40px "Noto Sans JP",sans-serif', 51);
+  ctx.fillStyle = '#54d5e7'; ctx.fillRect(560, 350, 546, 6);
+  await attributeRow(ctx, result.main, 'メイン属性', panelCenter, 397);
+  await attributeRow(ctx, result.sub, 'サブ属性', panelCenter, 449);
 
-  stepWindow(ctx, 548, 490, 566, 170, {dark:'#051228',rim:'#378ea7',face:'#123356'});
-  ctx.fillStyle = '#ffe29b'; ctx.font = '700 24px "DotGothic16","Noto Sans JP",sans-serif';ctx.fillText('◆ 固有スキル ◆',577,533);
-  ctx.fillStyle = '#f7fcff';ctx.font = '800 37px "Noto Sans JP",sans-serif';ctx.fillText(main.skill,577,576);
-  textBlock(ctx, main.skillCopy, 577, 607, 510, '700 23px "Noto Sans JP",sans-serif', 29, 2);
+  stepWindow(ctx, 540, 475, 586, 182, {dark:'#051228',rim:'#378ea7',face:'#123356'});
+  ctx.fillStyle = '#ffe29b';
+  ctx.font = '400 27px "DotGothic16","Noto Sans JP",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('◆ 固有スキル ◆', panelCenter, 515);
+  ctx.fillStyle = '#f7fcff';
+  ctx.font = '800 39px "Noto Sans JP",sans-serif';
+  ctx.fillText(main.skill, panelCenter, 558);
+  centeredLines(ctx, skillLines[result.main], main.skillCopy, panelCenter, 594, 548, '800 31px "Noto Sans JP",sans-serif', 36);
 
   stepWindow(ctx, 46, 690, 1108, 155, {dark:'#051024',rim:main.color,face:'#0b2245'});
   ctx.fillStyle = main.color; ctx.fillRect(110, 747, 18, 18); ctx.fillRect(128, 752, 10, 8);
