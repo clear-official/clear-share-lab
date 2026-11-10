@@ -1,6 +1,6 @@
 import { traits, questions, scoreAnswers, shareText } from './data.js';
 import { PUBLIC_SITE_URL, IOS_STORE_URL, ANDROID_STORE_URL, CONTACT_URL } from './config.js';
-import { createResultCard } from './card.js?v=2';
+import { createResultCard } from './card.js?v=3';
 
 const app = document.getElementById('app');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -25,7 +25,7 @@ const asset = (file, alt, className) => `<div class="asset-crop ${className}"><i
 const frame = (content, className='') => `<div class="pixel-frame ${className}"><div class="pixel-rim"><div class="pixel-face">${content}</div></div></div>`;
 const button = (label, action, className='', disabled=false) => `<button type="button" class="pixel-button ${className}" data-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
 const scene = (kind, shards='') => `<div class="scene scene-${kind}" aria-label="夜の錬成工房でリアちゃんがクリスタルを錬成している"><span class="scene-edge left"></span><span class="scene-edge right"></span><img class="scene-ria" src="./assets/ria-alchemy.png" alt="">${shards}</div>`;
-const progress = (count, complete=false) => `<div class="progress-wrap"><p class="progress-label">${complete?'カケラの収集完了':'カケラの収集'}</p><div class="progress" role="progressbar" aria-label="カケラの収集" aria-valuemin="0" aria-valuemax="7" aria-valuenow="${count}">${questions.map((_,i)=>`<span class="progress-cell ${i<count?'done':''}" aria-hidden="true"></span>`).join('')}</div></div>`;
+const progress = (count, complete=false) => `<div class="progress-wrap">${complete?'<p class="progress-label">カケラの収集完了</p>':''}<div class="progress" role="progressbar" aria-label="カケラの収集" aria-valuemin="0" aria-valuemax="7" aria-valuenow="${count}">${questions.map((_,i)=>`<span class="progress-cell ${i<count?'done':''}" aria-hidden="true"></span>`).join('')}</div></div>`;
 function clearTimers(){clearTimeout(state.timer);state.workingTimers.forEach(clearTimeout);state.workingTimers=[]}
 function render(restoreScroll=false){
   clearTimers();
@@ -50,7 +50,7 @@ function renderStart(){
 }
 function renderQuestion(){
   app.className='shell question-screen';const q=questions[state.index],current=state.answers[state.index];
-  app.innerHTML=`<div class="screen-top"><h1 class="question-logo" tabindex="-1">${asset('title-pixel.png','わたしのキャラ錬成','question-logo-art')}</h1></div>${progress(state.answers.slice(0,state.index).filter(a=>a!==null).length)}${frame(`<h2 class="question-text">${escapeHTML(q.text)}</h2>`,'question-window')}<div class="choice-list">${q.options.map((o,i)=>button(escapeHTML(o.text),'choose',`choice ${current===i?'selected':''}` ).replace('data-action="choose"',`data-action="choose" data-option="${i}" aria-pressed="${current===i}"`)).join('')}</div><div class="back-wrap">${state.index>0?'<button type="button" class="back-link" data-action="back">ひとつ前の質問に戻る</button>':''}</div><div class="question-tail">${scene('question')}<p class="feedback" role="status" aria-live="polite"></p></div>`;
+  app.innerHTML=`<div class="screen-top"><h1 class="question-logo" tabindex="-1">${asset('title-pixel.png','わたしのキャラ錬成','question-logo-art')}</h1></div>${scene('question','<p class="scene-feedback" role="status" aria-live="polite"></p>')}${progress(state.answers.slice(0,state.index).filter(a=>a!==null).length)}${frame(`<h2 class="question-text">${escapeHTML(q.text)}</h2>`,'question-window')}<div class="choice-list">${q.options.map((o,i)=>button(escapeHTML(o.text),'choose',`choice ${current===i?'selected':''}` ).replace('data-action="choose"',`data-action="choose" data-option="${i}" aria-pressed="${current===i}"`)).join('')}</div><div class="back-wrap">${state.index>0?'<button type="button" class="back-link" data-action="back">ひとつ前の質問に戻る</button>':''}</div>`;
   state.seenFirst=true;
   if(current!==null){const selected=app.querySelector(`.choice[data-option="${current}"]`);selected?.style.setProperty('--selected-color',traits[q.options[current].primary].color)}
 }
@@ -69,9 +69,9 @@ function choose(option,target){
   app.querySelectorAll('.choice').forEach((el,i)=>{el.disabled=true;el.classList.toggle('selected',i===option);el.setAttribute('aria-pressed',String(i===option))});
   target.style.setProperty('--selected-color',trait.color);
   const back=app.querySelector('[data-action="back"]');if(back)back.disabled=true;
-  app.querySelector('.feedback').textContent=`${trait.name}のカケラを獲得！`;
+  app.querySelector('.scene-feedback').innerHTML=`${escapeHTML(trait.name)}のカケラを<br>獲得！`;
   if(!reducedMotion)flyShard(target,trait.color);
-  state.timer=setTimeout(()=>{state.locked=false;goNext()},reducedMotion?250:710);
+  state.timer=setTimeout(()=>{state.locked=false;goNext()},reducedMotion?1050:1250);
 }
 function goNext(){
   if(state.locked||state.answers[state.index]===null)return;

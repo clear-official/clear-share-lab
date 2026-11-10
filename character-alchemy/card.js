@@ -202,13 +202,13 @@ export async function createResultCard(result) {
 
   stepWindow(ctx, 540, 475, 586, 182, {dark:'#051228',rim:'#378ea7',face:'#123356'});
   ctx.fillStyle = '#ffe29b';
-  ctx.font = '400 27px "DotGothic16","Noto Sans JP",sans-serif';
+  ctx.font = '800 32px "Noto Sans JP",sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('◆ 固有スキル ◆', panelCenter, 515);
+  ctx.fillText('◆ 固有スキル ◆', panelCenter, 527);
   ctx.fillStyle = '#f7fcff';
-  ctx.font = '800 39px "Noto Sans JP",sans-serif';
-  ctx.fillText(main.skill, panelCenter, 558);
-  centeredLines(ctx, skillLines[result.main], main.skillCopy, panelCenter, 594, 548, '800 31px "Noto Sans JP",sans-serif', 36);
+  ctx.font = '800 34px "Noto Sans JP",sans-serif';
+  ctx.fillText(main.skill, panelCenter, 567);
+  centeredLines(ctx, skillLines[result.main], main.skillCopy, panelCenter, 603, 548, '700 27px "Noto Sans JP",sans-serif', 31);
 
   stepWindow(ctx, 46, 690, 1108, 155, {dark:'#051024',rim:main.color,face:'#0b2245'});
   ctx.fillStyle = main.color; ctx.fillRect(110, 747, 18, 18); ctx.fillRect(128, 752, 10, 8);
