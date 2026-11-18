@@ -150,16 +150,25 @@ body {
   transform: translateX(-50%);
   filter: drop-shadow(0 7px 10px rgba(4,31,48,.18));
 }
-.chalk-heart,
-.chalk-star {
+.board-writing {
   position: absolute;
-  color: #fff5cc;
-  line-height: 1;
-  font-family: Georgia, serif;
-  opacity: .9;
+  inset: 11% 8% 15%;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(248,250,229,.75);
+  font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+  font-size: clamp(.7rem, 2.7vw, .93rem);
+  font-weight: 600;
+  line-height: 1.7;
+  letter-spacing: .08em;
+  text-shadow: 0 0 2px rgba(255,255,255,.3);
+  pointer-events: none;
 }
-.chalk-heart { left: 12%; top: 22%; font-size: 3.6rem; transform: rotate(-16deg); }
-.chalk-star { right: 12%; top: 19%; font-size: 2.7rem; transform: rotate(13deg); }
+.board-notes, .board-equations { display: flex; flex-direction: column; align-items: flex-start; }
+.board-notes { transform: rotate(-2deg); }
+.board-notes span:first-child { margin-bottom: 6px; border-bottom: 1px solid rgba(248,250,229,.55); }
+.board-equations { align-items: flex-end; font-family: Georgia, "Yu Gothic", serif; font-size: 1.08em; transform: rotate(2deg); }
 .hero-copy {
   margin: 0 auto 8px;
   color: var(--school-ink);
@@ -169,20 +178,6 @@ body {
   letter-spacing: .015em;
   text-wrap: balance;
 }
-.home-time {
-  margin: 0 auto 15px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 14px;
-  border: 1.5px dashed #9c9acb;
-  border-radius: 999px;
-  color: #304c75;
-  background: #f0edff;
-  font-size: .9rem;
-  font-weight: 800;
-}
-.home-time strong { color: #a63871; font-size: 1.03rem; }
 .home-screen #start-button { width: min(100%, 380px); }
 .home-reward-card {
   width: min(100%, 510px);
@@ -645,7 +640,6 @@ body {
   .home-title-logo { width: min(96%, 320px); margin-top: 0; }
   .home-teacher-scene { height: clamp(172px, 28svh, 195px); }
   .hero-copy { font-size: 1.12rem; }
-  .home-time { margin-bottom: 12px; }
   .question-card { padding: 34px 14px 24px 20px; }
   .question-title { font-size: 1.32rem; }
   .answer-btn { grid-template-columns: 36px minmax(0, 1fr) 13px; gap: 8px; min-height: 73px; font-size: .96rem; }
@@ -686,16 +680,6 @@ body {
   z-index: 2;
   background: linear-gradient(#d4b58b, #aa7b50);
   box-shadow: 0 3px 2px rgba(80,47,29,.15);
-}
-.chalk-heart { left: 9%; top: 21%; opacity: .67; }
-.chalk-star { right: 9%; top: 17%; opacity: .75; }
-.chalk-doodle {
-  position: absolute;
-  right: 15%;
-  bottom: 21%;
-  color: rgba(255,241,206,.7);
-  font: 2.6rem Georgia, serif;
-  transform: rotate(-15deg);
 }
 .chalk-stick {
   position: absolute;
@@ -922,26 +906,9 @@ body {
 .result-sheet .rating-row:nth-child(even) { background: #f3f6fc; }
 .result-sheet .rating-row:last-child { border-bottom: 0; }
 .result-sheet .rating-label { display: flex; align-items: center; gap: 5px; font-size: .92rem; }
-.rating-honmaru { color: #da5269; font: 1.25rem Georgia, serif; line-height: 1; transform: rotate(-13deg); }
 .result-sheet .stars { justify-content: flex-end; gap: 2px; font-size: 1.28rem; white-space: nowrap; }
 .teacher-note { margin-top: 15px; border: 1.5px solid #d6a4ad; border-left: 4px solid #e17687; background-color: #fffbfa; }
 .teacher-note::after { content: none; }
-.teacher-stamp {
-  position: absolute;
-  right: 18px;
-  top: 14px;
-  width: 49px;
-  height: 49px;
-  display: grid;
-  place-items: center;
-  border: 2px solid #e07a8b;
-  border-radius: 50%;
-  color: #c54c6c;
-  font-size: .68rem;
-  font-weight: 900;
-  transform: rotate(13deg);
-  opacity: .85;
-}
 .teacher-note h3 { color: #ab3c5d; background: transparent; border-bottom: 2px solid #e998a7; border-radius: 0; }
 .teacher-note .teacher-text { line-height: 1.75; }
 .summary-inline { margin-top: 12px; background: repeating-linear-gradient(180deg, #fcfbff 0 34px, #e3e8f4 35px, #fcfbff 36px); }
@@ -967,7 +934,6 @@ body {
   .result-sheet .rating-row:nth-child(4),
   .result-sheet .rating-row:last-child:nth-child(odd) { min-height: 47px; padding: 5px 8px; }
   .result-sheet .stars { font-size: 1.19rem; }
-  .teacher-stamp { right: 9px; width: 42px; height: 42px; font-size: .62rem; }
 }
 @media (max-width: 375px) {
   .question-card { padding: 19px 13px 23px 20px; }
@@ -976,15 +942,13 @@ body {
   .result-hero .type-name { font-size: 1.9rem; }
   .result-sheet .rating-label { font-size: .83rem; }
   .result-sheet .stars { gap: 1px; font-size: 1.05rem; }
-  .rating-honmaru { font-size: 1.05rem; }
-  .teacher-stamp { top: 10px; width: 36px; height: 36px; font-size: .55rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .answer-btn.is-marked::after,
   .grading-mark { animation: none; }
 }
 
-/* 放課後の教室: 窓の光、壁の掲示物、黒板前の机。 */
+/* 放課後の教室: 窓の光と黒板前の机。 */
 .home-screen .hero {
   background:
     radial-gradient(ellipse at 85% 12%, rgba(255,242,182,.48), transparent 38%),
@@ -1004,21 +968,6 @@ body {
   z-index: -1;
   background: linear-gradient(125deg, rgba(255,247,203,.35), transparent 70%);
   transform: skewX(-18deg);
-}
-.classroom-poster {
-  position: absolute;
-  top: 23px;
-  left: 22px;
-  padding: 9px 11px;
-  border: 1px solid #d1b9ce;
-  border-radius: 2px;
-  color: #687493;
-  background: #fff8ea;
-  box-shadow: 3px 5px 0 rgba(148,127,146,.12);
-  font-size: .69rem;
-  font-weight: 900;
-  line-height: 1.4;
-  transform: rotate(-5deg);
 }
 .home-teacher-scene::before {
   content: "";
@@ -1295,9 +1244,69 @@ body {
 .share-modal-card p { margin: 0; color: #fff; font-size: .8rem; font-weight: 700; line-height: 1.6; text-align: center; }
 
 @media (max-width: 375px) {
-  .classroom-poster { left: 16px; top: 18px; padding: 5px 7px; font-size: .61rem; }
   .classroom-window { right: 13px; top: 13px; width: 92px; height: 90px; }
   .destination-choice { font-size: .79rem; padding: 7px 5px; }
   .destination-check { width: 18px; height: 18px; }
   .destination-details { padding: 11px; }
+}
+
+/* 結果と参加方法を別のページとして区切る。 */
+.result-wrap .result-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(100%, 430px);
+  margin: 20px auto 10px;
+}
+.result-next span { font-size: 1.65rem; line-height: .6; }
+.share-wrap { max-width: 760px; margin: 0 auto; }
+.share-wrap > .topbar {
+  width: 100%;
+  min-height: 44px;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  justify-content: flex-start;
+}
+.share-intro {
+  padding: 15px 16px 17px;
+  border: 1.5px solid #9fb4cf;
+  border-radius: 15px;
+  background: #fffdfa;
+  box-shadow: 0 8px 19px rgba(36,63,108,.08);
+  text-align: center;
+}
+.share-intro p {
+  width: fit-content;
+  margin: 0 auto 7px;
+  padding: 3px 12px;
+  border-bottom: 2px solid #e88498;
+  color: #596c8b;
+  font-size: .83rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+.share-intro h1 { margin: 0 0 7px; color: var(--school-ink); font-size: clamp(1.48rem, 5.3vw, 2rem); line-height: 1.3; }
+.share-intro span { color: #475f7e; font-size: .9rem; font-weight: 700; line-height: 1.6; }
+.share-wrap .journey-card { margin-top: 14px; padding: 18px 16px 22px; }
+.share-wrap .share-panel { padding: 0 0 19px; border-bottom: 1px dashed #afc1d6; }
+.share-wrap .share-panel-heading h2 { margin-bottom: 14px; }
+.share-wrap .share-preview-button { width: min(100%, 460px); }
+.share-wrap .share-panel canvas { width: 100%; }
+.share-wrap .reward-card { width: min(100%, 580px); margin: 22px auto 0; }
+.share-wrap .proof-card { margin-top: 18px; }
+.share-wrap .support-submission { width: min(100%, 520px); margin: 0 auto; }
+.share-wrap .support-cta { display: block; width: 100%; }
+.share-wrap .restart-link { display: block; }
+
+@media (max-width: 430px) {
+  .home-screen .hero { min-height: min(570px, calc(100svh - 42px)); }
+  .home-teacher-scene { margin-bottom: 14px; }
+  .board-writing { inset: 10% 5% 15%; font-size: .68rem; gap: 8px; }
+  .board-notes span:first-child { margin-bottom: 3px; }
+  .share-wrap .journey-card { padding: 14px 10px 19px; }
+  .share-intro { padding: 13px 10px 15px; }
 }

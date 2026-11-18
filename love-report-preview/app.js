@@ -176,6 +176,7 @@ const SCREEN_TITLES = {
   name: "表示名の入力",
   grading: "先生が採点中",
   result: "診断結果",
+  share: "シェアと参加方法",
 };
 
 const defaultState = () => ({ screen: "home", questionIndex: 0, answers: [], name: "", resultId: null, shareDestination: "sns" });
@@ -191,7 +192,7 @@ function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved) return defaultState();
-    const restoredScreen = ["share", "upload", "code", "grading"].includes(saved.screen) ? "result" : saved.screen;
+    const restoredScreen = ["upload", "code", "grading"].includes(saved.screen) ? "result" : saved.screen;
     if (!SCREEN_TITLES[restoredScreen]) return defaultState();
     return {
       ...defaultState(),
@@ -324,11 +325,9 @@ function renderHome() {
   return `<section class="screen home-screen">
     <div class="hero glass-card">
       <div class="classroom-window" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-      <span class="classroom-poster" aria-hidden="true">放課後の<br>恋愛授業 ♡</span>
       <img class="home-title-logo" src="${LOVE_REPORT_LOGO.src}" alt="恋愛通知表" width="${LOVE_REPORT_LOGO.width}" height="${LOVE_REPORT_LOGO.height}" fetchpriority="high" decoding="async" />
-      <div class="home-teacher-scene"><span class="chalk-heart" aria-hidden="true">♡</span><span class="chalk-doodle" aria-hidden="true">◎</span><img class="home-teacher" src="${TEACHER_IMAGE.src}" alt="先生リアちゃん" width="${TEACHER_IMAGE.width}" height="${TEACHER_IMAGE.height}" fetchpriority="high" decoding="async" /><span class="chalk-star" aria-hidden="true">✦</span><span class="chalk-stick" aria-hidden="true"></span><span class="board-eraser" aria-hidden="true"></span></div>
+      <div class="home-teacher-scene"><div class="board-writing" aria-hidden="true"><div class="board-notes"><span>本日の板書</span><span>・小テスト</span><span>・提出 → 通知表</span></div><div class="board-equations"><span>2 + 3 = 5</span><span>6 × 2 = 12</span><span>Ａ　Ｂ　Ｃ</span></div></div><img class="home-teacher" src="${TEACHER_IMAGE.src}" alt="先生リアちゃん" width="${TEACHER_IMAGE.width}" height="${TEACHER_IMAGE.height}" fetchpriority="high" decoding="async" /><span class="chalk-stick" aria-hidden="true"></span><span class="board-eraser" aria-hidden="true"></span></div>
       <p class="hero-copy">あなたの恋愛、<br>通知表にしたらどんなタイプ？</p>
-      <p class="home-time"><span>所要時間</span><strong>約1分</strong></p>
       <button class="cta cta-pink" id="start-button">診断スタート <span aria-hidden="true">›</span></button>
     </div>
     <aside class="home-reward-card" aria-label="診断結果をシェアすると100ポイントプレゼント">
@@ -391,7 +390,7 @@ function typeNameMarkup(result) {
 }
 
 function ratingsMarkup(result) {
-  return Object.entries(result.ratings).map(([label, value]) => `<div class="rating-row${value === 5 ? " is-honmaru" : ""}" role="row"><span class="rating-label" role="rowheader">${label}${value === 5 ? `<span class="rating-honmaru" aria-hidden="true">◎</span>` : ""}</span><span class="stars" role="cell" aria-label="5段階中${value}">${stars(value)}</span></div>`).join("");
+  return Object.entries(result.ratings).map(([label, value]) => `<div class="rating-row" role="row"><span class="rating-label" role="rowheader">${label}</span><span class="stars" role="cell" aria-label="5段階中${value}">${stars(value)}</span></div>`).join("");
 }
 
 function summaryMarkup(result) {
@@ -422,7 +421,7 @@ function sharePanelMarkup() {
   const snsSelected = state.shareDestination === "sns";
   return `<section class="share-panel" id="share-panel">
     <div class="share-panel-heading">
-      <h2>この結果をシェアしよう</h2>
+      <h2>結果カードを保存・共有</h2>
     </div>
     <div class="share-canvas-wrap">
       <p class="share-image-loading" id="share-image-loading" role="status">シェア画像を準備中…</p>
@@ -484,7 +483,7 @@ function sharePreviewModalMarkup() {
     <div class="share-modal-card">
       <button class="modal-close" id="close-preview" type="button">閉じる</button>
       <img id="expanded-share-image" alt="${escapeHtml(state.name)}さんの恋愛通知表" />
-      <p>画像を長押しして保存できる端末もあります。保存できない場合は、結果画面の保存ボタンをご利用ください。</p>
+      <p>画像を長押しして保存できる端末もあります。保存できない場合は、このページの保存ボタンをご利用ください。</p>
     </div>
   </div>`;
 }
@@ -506,13 +505,26 @@ function renderResult() {
     <section class="section-card result-sheet">
       <h2 class="rating-heading">5段階評価</h2>
       <div class="ratings" role="table" aria-label="恋愛通知表の5段階評価">${ratingsMarkup(result)}</div>
-      <aside class="teacher-note"><div class="teacher-note-head"><img class="teacher-face" src="${TEACHER_IMAGE.src}" alt="リアちゃん先生" width="${TEACHER_IMAGE.width}" height="${TEACHER_IMAGE.height}" loading="lazy" decoding="async" /><h3>先生からのひとこと</h3></div><span class="teacher-stamp" aria-hidden="true">花まる</span><p class="teacher-text">${result.teacherComment}</p></aside>
+      <aside class="teacher-note"><div class="teacher-note-head"><img class="teacher-face" src="${TEACHER_IMAGE.src}" alt="リアちゃん先生" width="${TEACHER_IMAGE.width}" height="${TEACHER_IMAGE.height}" loading="lazy" decoding="async" /><h3>先生からのひとこと</h3></div><p class="teacher-text">${result.teacherComment}</p></aside>
       <div class="summary-inline"><h3><span>総評</span></h3><p class="summary-text">${summaryMarkup(result)}</p></div>
     </section>
     </article>
+    <button class="cta cta-pink result-next" id="go-share" type="button">結果をシェアする <span aria-hidden="true">›</span></button>
+  </section>`;
+}
+
+function renderShare() {
+  const result = resultData();
+  return `<section class="screen share-wrap" style="--accent:${result.accentColor};--accent-soft:${result.accentSoft};--accent-deep:${result.accentDeep}">
+    ${topbar("result", false)}
+    <header class="share-intro">
+      <p>恋愛通知表</p>
+      <h1>結果をシェアしよう</h1>
+      <span>${escapeHtml(state.name)}さんの結果カードを、保存・共有できます。</span>
+    </header>
     <section class="journey-card glass-card support-journey">
-      ${rewardMarkup()}
       ${sharePanelMarkup()}
+      ${rewardMarkup()}
       ${proofMarkup()}
       ${supportSubmissionMarkup()}
     </section>
@@ -526,10 +538,10 @@ function render() {
   const app = document.querySelector("#app");
   if (previewOpen) closeSharePreview({ restoreHistory: false });
   document.title = `${SCREEN_TITLES[state.screen]}｜CLEAR シェアラボ（確認用）`;
-  const views = { home: renderHome, quiz: renderQuiz, name: renderName, grading: renderGrading, result: renderResult };
+  const views = { home: renderHome, quiz: renderQuiz, name: renderName, grading: renderGrading, result: renderResult, share: renderShare };
   app.innerHTML = (views[state.screen] || renderHome)();
   bindEvents();
-  if (state.screen === "result") {
+  if (state.screen === "share") {
     shareBlob = null;
     drawShareImage().catch(() => {
       document.querySelector("#share-canvas")?.setAttribute("aria-busy", "false");
@@ -552,6 +564,7 @@ function bindEvents() {
   document.querySelectorAll("[data-go]").forEach((button) => button.addEventListener("click", () => navigateAction(button.dataset.go)));
   document.querySelector("#name-form")?.addEventListener("submit", submitName);
   document.querySelector("#skip-grading")?.addEventListener("click", finishGrading);
+  document.querySelector("#go-share")?.addEventListener("click", () => setScreen("share"));
   document.querySelector("#open-preview")?.addEventListener("click", openSharePreview);
   document.querySelector("#close-preview")?.addEventListener("click", () => closeSharePreview());
   document.querySelector("#share-image-modal")?.addEventListener("click", (event) => { if (event.target.id === "share-image-modal") closeSharePreview(); });
@@ -798,7 +811,12 @@ async function drawShareImage() {
   ctx.fillStyle = "#a1346b";
   ctx.font = '900 23px "Yu Gothic", sans-serif';
   ctx.fillText("先生からのひとこと", 101, 638);
-  drawReportStamp(ctx, 780, 635, 25, "花まる");
+  ctx.strokeStyle = "#d96a83";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(101, 650);
+  ctx.lineTo(350, 650);
+  ctx.stroke();
   ctx.fillStyle = "#21375d";
   const teacherLayout = fitCanvasLines(ctx, result.teacherComment, 690, 3, 26, 22, 750);
   teacherLayout.lines.forEach((line, index) => ctx.fillText(line, 101, 676 + index * 27));
@@ -826,11 +844,6 @@ async function drawShareImage() {
     ctx.fillStyle = "#21375d";
     ctx.font = '850 23px "Yu Gothic", sans-serif';
     ctx.fillText(label, cellX + 20, cellY + 36);
-    if (value === 5) {
-      ctx.fillStyle = "#d94f69";
-      ctx.font = '900 27px "Yu Gothic", sans-serif';
-      ctx.fillText("◎", cellX + (isLast ? 262 : 183), cellY + 37);
-    }
     const starStart = isLast ? cellX + 320 : cellX + 222;
     for (let star = 0; star < 5; star += 1) {
       drawVectorStar(ctx, starStart + star * 43, cellY + 28, 16, star < value);
@@ -984,7 +997,7 @@ function openSharePreview() {
   modal.hidden = false;
   previewOpen = true;
   document.documentElement.classList.add("preview-is-open");
-  history.pushState({ screen: "result", preview: true }, "", "#preview");
+  history.pushState({ screen: "share", preview: true }, "", "#preview");
   modal.querySelector("#close-preview")?.focus();
 }
 
@@ -1054,10 +1067,10 @@ function escapeHtml(value = "") {
 window.addEventListener("popstate", (event) => {
   if (previewOpen) {
     closeSharePreview({ restoreHistory: false });
-    if (event.state?.screen === "result" || location.hash === "#result") return;
+    if (event.state?.screen === state.screen || location.hash === `#${state.screen}`) return;
   }
   const screen = event.state?.screen || location.hash.slice(1);
-  const normalizedScreen = ["share", "upload", "code", "grading", "preview"].includes(screen) ? "result" : screen;
+  const normalizedScreen = ["upload", "code", "grading", "preview"].includes(screen) ? "result" : screen;
   if (!SCREEN_TITLES[normalizedScreen]) return;
   if (normalizedScreen !== screen) history.replaceState({ screen: normalizedScreen }, "", `#${normalizedScreen}`);
   state.screen = normalizedScreen;
@@ -1071,5 +1084,5 @@ window.addEventListener("keydown", (event) => {
 
 if (location.hash === "#home") state.screen = "home";
 if (!location.hash || location.hash !== `#${state.screen}`) history.replaceState({ screen: state.screen }, "", `#${state.screen}`);
-if (["quiz", "name", "result"].includes(state.screen)) preloadCharacters();
+if (["quiz", "name", "result", "share"].includes(state.screen)) preloadCharacters();
 render();
